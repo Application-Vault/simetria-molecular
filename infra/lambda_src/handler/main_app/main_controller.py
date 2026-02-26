@@ -60,13 +60,25 @@ class MoleculeSymmetryApp:
                 for nome, ativo in config.analises.items()
                 if ativo
             ]
+
+            # >>> DEBUG (depois a gente troca por logger)
+            print("=== DEBUG RUN ===")
+            print("render.tipo   =", getattr(config.render, "tipo", None))
+            print("render.formato=", getattr(config.render, "formato", None))
+            print("render.paleta =", getattr(config.render, "paleta", None))
+            print("analises      =", config.analises)
+            print("=================")
+
+            # usa o formato do payload (pdf/tex)
+            formato = RenderTipo.from_str(config.render.formato)  # "pdf" / "tex"
+            
             return (
                 SymmetryAnalyzer
                 .de(self.group, self.molecule)
                 .usar(RepresentationType.PERMUTATION)
                 .configurar(analises, uid)
                 .executar()
-                .renderizar(RenderTipo.TEX)
+                .renderizar(formato)
             )
 
         # Com operação selecionada: renderiza operação
