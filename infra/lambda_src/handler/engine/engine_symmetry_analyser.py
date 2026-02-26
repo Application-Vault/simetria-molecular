@@ -52,10 +52,10 @@ class SymmetryAnalyzer:
         return cls(molecule, group)
 
     def usar(self, tipo: RepresentationType) -> 'SymmetryAnalyzer':
-        print(
-            f"\n\033[95m>>> Usando grupo: \033[1m{self.group.nome}\033[0m "
-            f"\033[94mcom molécula: \033[1m{getattr(self.molecule, 'nome', 'desconhecida')}\033[0m"
-        )
+        # print(
+        #     f"\n\033[95m>>> Usando grupo: \033[1m{self.group.nome}\033[0m "
+        #     f"\033[94mcom molécula: \033[1m{getattr(self.molecule, 'nome', 'desconhecida')}\033[0m"
+        # ) -> print log colorido!!! :)
         self.rep = (
             RepresentationBuilder()
             .de(self.group, self.molecule)
