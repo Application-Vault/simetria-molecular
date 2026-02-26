@@ -106,6 +106,11 @@ def identificar_grupo_pontual_versao_alternativa(xyz_path: str) -> str:
     - determina grupo pontual a partir do nome do arquivo .xyz
     Ex: static/moleculas/benzeno.xyz -> D6h
     """
+    print("=== DEBUG GRUPO ===")
+    print("xyz_path:", xyz_path)
+    print("basename:", os.path.basename(xyz_path))
+    print("base:", base)
+    print("===================")
     base = os.path.splitext(os.path.basename(xyz_path))[0].lower().strip()
 
     try:
