@@ -1,4 +1,4 @@
-Este módulo faz parte do projeto de simetria molecular desenvolvido no contexto da disciplina de pós-graduação PGF5261 Teoria de Grupos Aplicada para Sólidos e Moléculas.
+This module is part of the molecular symmetry project developed in the context of the graduate course PGF5261 – Group Theory Applied to Solids and Molecules.
 <!-- ---
 title: Simetria Molecular
 emoji: 🔬
@@ -9,4 +9,5 @@ sdk_version: 28.1.1
 app_file: app.py
 pinned: false
 --- -->
-Esse cógido está vivo e pode ser acessado pelo link: https://naavilam.github.io/simetria-molecular
+This codebase is live and can be accessed at the following link:
+https://application-vault.github.io/simetria-molecular
