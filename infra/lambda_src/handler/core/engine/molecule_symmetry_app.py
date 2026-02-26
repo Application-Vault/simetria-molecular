@@ -17,8 +17,7 @@
 """
 
 from typing import overload, Union
-from model.model_molecula import Molecule
-from analysis.analise_tipo import AnaliseTipo
+from core.model.model_molecula import Molecule
 from render.builder import RendererBuilder
 from main_app.main_dto import RenderConfig
 from engine_analyzer.symmetry_analyzer import SymmetryAnalyzer

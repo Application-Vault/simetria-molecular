@@ -1,6 +1,6 @@
 import os, uuid, base64
 from render.render_tipo import RenderTipo
-from engine_analyzer.molecule_symmetry_app import MoleculeSymmetryApp
+from core.engine.molecule_symmetry_app import MoleculeSymmetryApp
 from .dto import AnaliseRequest
 
 def processar_analise_bytes(mol_bytes: bytes, data: AnaliseRequest):
