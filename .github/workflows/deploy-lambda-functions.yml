@@ -2,7 +2,7 @@ name: Deploy Lambda Functions
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "backend" ]
     paths:
       - "infra/lambda_src/**"
       - ".github/workflows/deploy-lambda-functions.yml"
