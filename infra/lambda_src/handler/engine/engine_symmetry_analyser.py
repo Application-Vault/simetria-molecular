@@ -134,7 +134,7 @@ class SymmetryAnalyzer:
         if formato == RenderTipo.TEX:
             return LatexReportGenerator(metadata, self._resultado).gerar_documento()
         elif formato == RenderTipo.PDF:
-            return PdfReportGenerator(metadata, self._resultado).gerar_pdf()
+            return PdfReportGenerator(metadata, self._resultado).gerar_pdf()  # bytes
         else:
             raise ValueError(f"Formato de saída não suportado: {formato}")
 

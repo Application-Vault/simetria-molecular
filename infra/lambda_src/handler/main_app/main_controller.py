@@ -185,24 +185,51 @@ def processar_analise_bytes(molecula_bytes: bytes, molecula_filename: str, data:
 
     # roda app
     app = MoleculeSymmetryApp.from_files(mol_path, grupo_path)
+
+    # logs do request
+    fmt = (getattr(getattr(data, "render", None), "formato", None) or "tex").strip().lower()
+    print("[REQ] uid=", temp_id, "formato=", fmt, "operacao_id=", getattr(data.render, "operacao_id", None))
+
     output = app.run(selected_op=data.render.operacao_id, config=data, uid=temp_id)
 
-    # por enquanto: TEX sempre (igual sua versão atual)
+    # nomes dos arquivos
     nome_base = (molecula_filename or "molecula.xyz").rsplit(".", 1)[0]
     nome_tex = (
         "Analise_Simetria_Molecula_Personalizada.tex"
         if nome_base.lower() in ["outro", "outro.xyz", "personalizado"]
         else f"Analise_Simetria_Molecula_{nome_base}.tex"
     )
+    nome_pdf = nome_tex.replace(".tex", ".pdf")
 
-    # se output já é TEX string
+    # -----------------------------
+    # PDF: mostrar inline
+    # -----------------------------
+    if fmt == "pdf":
+        if not isinstance(output, (bytes, bytearray)):
+            # se ainda veio TEX, é bug no fluxo: loga e devolve TEX pra não quebrar
+            print("[WARN] formato=pdf mas output nao é bytes:", type(output))
+            return _resp_file_text(str(output), nome_tex, "application/x-tex")
+
+        return {
+            "statusCode": 200,
+            "isBase64Encoded": True,
+            "headers": {
+                "Content-Type": "application/pdf",
+                "Content-Disposition": f'inline; filename="{nome_pdf}"',  # <<< EXIBE
+            },
+            "body": base64.b64encode(bytes(output)).decode("ascii"),
+        }
+
+    # -----------------------------
+    # TEX: baixar como anexo
+    # -----------------------------
     if isinstance(output, str):
+        # _resp_file_text já usa attachment; se quiser garantir, mantém assim:
         return _resp_file_text(output, nome_tex, "application/x-tex")
 
-    # se em algum momento output virar bytes (pdf)
+    # fallback: se veio bytes mas pediram tex, devolve como download de pdf (não ideal, mas não quebra)
     if isinstance(output, (bytes, bytearray)):
-        return _resp_file_bytes(bytes(output), nome_tex.replace(".tex", ".pdf"), "application/pdf")
+        return _resp_file_bytes(bytes(output), nome_pdf, "application/pdf")
 
-    # fallback
     return _resp_file_text(str(output), nome_tex, "application/x-tex")
 

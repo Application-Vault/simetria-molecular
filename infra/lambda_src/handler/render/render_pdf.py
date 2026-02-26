@@ -1,44 +1,50 @@
 # render/render_pdf.py
 import os
 import subprocess
+from pathlib import Path
+from typing import Dict, Any
+
+from render.render_tex import LatexReportGenerator
 
 class PdfReportGenerator:
-    def __init__(self, tex_str: str, uid: str):
-        self.tex_str = tex_str
-        self.uid = uid
+    def __init__(self, metadata: Dict[str, Any], resultado: Dict[str, Any], tectonic_path: str = None):
+        self.metadata = metadata
+        self.resultado = resultado
+        self.tectonic_path = tectonic_path or "/var/task/bin/tectonic"  # dentro do zip
 
     def gerar_pdf(self) -> bytes:
-        workdir = f"/tmp/latex_{self.uid}"
-        os.makedirs(workdir, exist_ok=True)
+        # 1) gera o TEX "lindo"
+        tex_str = LatexReportGenerator(self.metadata, self.resultado).gerar_documento()
 
-        tex_path = os.path.join(workdir, f"{self.uid}.tex")
-        with open(tex_path, "w", encoding="utf-8") as f:
-            f.write(self.tex_str)
+        # 2) escreve em /tmp e compila
+        uid = self.metadata.get("uuid", "SIM")
+        workdir = Path(f"/tmp/pdf_{uid}")
+        workdir.mkdir(parents=True, exist_ok=True)
 
-        # cache do tectonic no /tmp
-        env = dict(os.environ)
-        env["TECTONIC_CACHE_DIR"] = os.path.join(workdir, "tectonic_cache")
+        tex_path = workdir / "report.tex"
+        tex_path.write_text(tex_str, encoding="utf-8")
 
-        # IMPORTANTE: binário tectonic junto no pacote
-        # ex: /var/task/bin/tectonic
-        tectonic_bin = "/var/task/bin/tectonic"
+        pdf_path = workdir / "report.pdf"
 
         cmd = [
-            tectonic_bin,
-            "-X", "compile",
-            "--outdir", workdir,
-            tex_path,
+            self.tectonic_path,
+            str(tex_path),
+            "--outdir", str(workdir),
+            "--print",                 # logs no stdout (bom pro CloudWatch)
+            "--synctex", "0",
+            "--keep-logs",             # deixa logs se der ruim
         ]
 
-        res = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env)
+        print("[PDF] Running:", " ".join(cmd))
+        proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-        if res.returncode != 0:
-            raise RuntimeError(
-                "Falha compilando PDF via tectonic.\n"
-                f"STDOUT:\n{res.stdout.decode(errors='replace')}\n"
-                f"STDERR:\n{res.stderr.decode(errors='replace')}\n"
-            )
+        print("[PDF] returncode:", proc.returncode)
+        if proc.stdout:
+            print("[PDF] stdout:", proc.stdout.decode("utf-8", errors="replace")[:2000])
+        if proc.stderr:
+            print("[PDF] stderr:", proc.stderr.decode("utf-8", errors="replace")[:2000])
 
-        pdf_path = os.path.join(workdir, f"{self.uid}.pdf")
-        with open(pdf_path, "rb") as f:
-            return f.read()
+        if proc.returncode != 0 or not pdf_path.exists():
+            raise RuntimeError("Falha ao gerar PDF via tectonic. Veja logs acima.")
+
+        return pdf_path.read_bytes()
