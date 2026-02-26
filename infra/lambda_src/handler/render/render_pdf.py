@@ -6,6 +6,7 @@ from typing import Dict, Any
 
 from render.render_tex import LatexReportGenerator
 
+
 class PdfReportGenerator:
     def __init__(self, metadata: Dict[str, Any], resultado: Dict[str, Any], tectonic_path: str = None):
         self.metadata = metadata
@@ -30,23 +31,24 @@ class PdfReportGenerator:
             self.tectonic_path,
             str(tex_path),
             "--outdir", str(workdir),
-            "--print",                 # logs no stdout (bom pro CloudWatch)
+            "--print",
             "--synctex",
-            "--keep-logs",             # deixa logs se der ruim
+            "--keep-logs",
         ]
 
         print("[PDF] Running:", " ".join(cmd))
 
-		env = os.environ.copy()
-		env["HOME"] = "/tmp"
-		env["XDG_CACHE_HOME"] = "/tmp"
+        # IMPORTANT: Lambda filesystem é read-only fora de /tmp
+        env = os.environ.copy()
+        env["HOME"] = "/tmp"
+        env["XDG_CACHE_HOME"] = "/tmp"
 
-		proc = subprocess.run(
-			cmd,
-			stdout=subprocess.PIPE,
-			stderr=subprocess.PIPE,
-			env=env,
-		)
+        proc = subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=env,
+        )
 
         print("[PDF] returncode:", proc.returncode)
         if proc.stdout:
