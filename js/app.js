@@ -2,9 +2,14 @@
 /* ENDPOINTS BACKEND          */
 /******************************/
 
-const baseUrlAnalise = 'https://naraavila-simetria-molecular.hf.space/api/analise'
-const baseUrlGrupos = 'https://naraavila-simetria-molecular.hf.space/api/grupo/';
-const baseUrlMoleculas = 'https://naraavila-simetria-molecular.hf.space/api/molecula/';
+// const baseUrlAnalise = 'https://naraavila-simetria-molecular.hf.space/api/analise'
+// const baseUrlGrupos = 'https://naraavila-simetria-molecular.hf.space/api/grupo/';
+// const baseUrlMoleculas = 'https://naraavila-simetria-molecular.hf.space/api/molecula/';
+
+const baseUrlAnalise = 'https://x8clyvj53d.execute-api.us-east-2.amazonaws.com/api/analise'
+const baseUrlGrupos = 'https://x8clyvj53d.execute-api.us-east-2.amazonaws.com/api/grupo/';
+const baseUrlMoleculas = 'https://x8clyvj53d.execute-api.us-east-2.amazonaws.comapi/molecula/';
+
 
 // const baseUrlAnalise = 'http://localhost:8000/api/analise'
 // const baseUrlGrupos = 'http://localhost:8000/api/grupo/';
@@ -14,21 +19,21 @@ const baseUrlMoleculas = 'https://naraavila-simetria-molecular.hf.space/api/mole
 /* AÇÃO SELECT MOLECULE*/
 /******************************/
 moleculaSelect.addEventListener('change', () => {
-    const moleculaSelecionada = moleculaSelect.value;
-    if (moleculaSelecionada === 'outro') {
-        moleculaOutput.readOnly = false;
-        moleculaOutput.value = "";
+  const moleculaSelecionada = moleculaSelect.value;
+  if (moleculaSelecionada === 'outro') {
+    moleculaOutput.readOnly = false;
+    moleculaOutput.value = "";
+  } else {
+    if (moleculaSelecionada) {
+      fetch(baseUrlMoleculas + moleculaSelecionada)
+        .then(response => response.ok ? response.text() : Promise.reject('Erro ao carregar o XYZ'))
+        .then(data => moleculaOutput.value = data)
+        .catch(err => moleculaOutput.value = err);
+      moleculaOutput.readOnly = true;
     } else {
-        if (moleculaSelecionada) {
-            fetch(baseUrlMoleculas + moleculaSelecionada)
-            .then(response => response.ok ? response.text() : Promise.reject('Erro ao carregar o XYZ'))
-            .then(data => moleculaOutput.value = data)
-            .catch(err => moleculaOutput.value = err);
-            moleculaOutput.readOnly = true;
-        } else {
-            moleculaOutput.value = '';
-        }
+      moleculaOutput.value = '';
     }
+  }
 });
 
 /******************************/
@@ -47,16 +52,16 @@ analiseBtn.addEventListener("click", async () => {
   const moleculaBlob = new Blob([moleculaText], { type: "text/plain" });
   formData.append("molecula", moleculaBlob, "molecula.xyz");
 
-    let paleta = null;
-    const analises = {};
-    let formato = null;
+  let paleta = null;
+  const analises = {};
+  let formato = null;
 
 
   // Apenas se renderização for gráfica
   if (tipo === "grafico") {
     paleta = document.querySelector('input[name="paletaCores"]:checked')?.value ?? "PASTEL";
     formato = document.querySelector('input[name="formatoGrafico"]:checked')?.value ?? "3d";
-    }
+  }
   else {
     formato = document.querySelector(`input[name="formatoTexto"]:checked`)?.value ?? "";
     document.querySelectorAll('input[name="analises"]:checked').forEach(input => {
@@ -64,7 +69,7 @@ analiseBtn.addEventListener("click", async () => {
     });
   }
 
-try {
+  try {
     const payload = {
       render: {
         tipo,
@@ -79,7 +84,7 @@ try {
     const response = await fetch(baseUrlAnalise, {
       method: "POST",
       body: formData,
-  });
+    });
 
     if (!response.ok) throw new Error("Erro ao processar a análise");
 
@@ -95,9 +100,9 @@ try {
     a.click();
     window.URL.revokeObjectURL(url);
 
-} catch (err) {
+  } catch (err) {
     alert("Erro na análise: " + err.message);
-}
+  }
 });
 
 function trocarRender() {
@@ -108,10 +113,10 @@ function trocarRender() {
   if (tipo === "texto") {
     divTexto.style.display = "block";
     divGrafico.style.display = "none";
-} else {
+  } else {
     divTexto.style.display = "none";
     divGrafico.style.display = "block";
-}
+  }
 }
 
 // Executa na inicialização da página
