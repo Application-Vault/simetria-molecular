@@ -18,9 +18,33 @@
 
 from enum import nonmember
 import numpy as np
-from scipy.spatial.transform import Rotation as R
 # from core.operation import Operation
 import json
+
+
+import numpy as np
+
+def rotvec_to_matrix(rotvec: np.ndarray) -> np.ndarray:
+    """
+    rotvec: vetor 3D = theta * u  (theta em radianos, u unitário)
+    retorna: matriz 3x3
+    """
+    theta = float(np.linalg.norm(rotvec))
+    if theta < 1e-12:
+        return np.eye(3)
+
+    u = rotvec / theta
+    ux, uy, uz = u
+
+    K = np.array([
+        [0.0, -uz,  uy],
+        [uz,  0.0, -ux],
+        [-uy, ux,  0.0],
+    ])
+
+    I = np.eye(3)
+    return I + np.sin(theta) * K + (1.0 - np.cos(theta)) * (K @ K)
+
 
 class Group:
 
@@ -99,10 +123,11 @@ class Group:
             return np.eye(3), None
 
         elif tipo == "rotacao":
-            eixo = np.array(operacao["eixo"])
-            angulo = operacao["angulo"]
+            eixo = np.array(operacao["eixo"], dtype=float)
+            angulo = float(operacao["angulo"])
             eixo = eixo / np.linalg.norm(eixo)
-            rot = R.from_rotvec(np.deg2rad(angulo) * eixo).as_matrix()
+
+            rot = rotvec_to_matrix(np.deg2rad(angulo) * eixo)
 
             destaque = {
                 "tipo": "eixo",

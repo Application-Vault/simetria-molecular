@@ -2,7 +2,11 @@ import numpy as np
 from .representation import Representation
 from .representation_matrix3d import Matrix3DRepresentation
 from core.core_molecula import Molecule
-from scipy.spatial.distance import cdist
+
+def cdist_numpy(A: np.ndarray, B: np.ndarray) -> np.ndarray:
+    # retorna matriz (N, M) com distâncias euclidianas
+    diff = A[:, None, :] - B[None, :, :]
+    return np.sqrt(np.sum(diff * diff, axis=-1))
 
 class PermutationRepresentation(Representation):
 
@@ -54,7 +58,7 @@ class PermutationRepresentation(Representation):
         coords_orig = np.array(molecule.coordenadas)
         coords_transf = np.dot(matriz, coords_orig.T).T
 
-        dist = cdist(coords_transf, coords_orig)
+        dist = cdist_numpy(coords_transf, coords_orig)
 
         permutacao = [-1] * len(coords_orig)
         usados = set()
