@@ -31,7 +31,7 @@ class PdfReportGenerator:
             str(tex_path),
             "--outdir", str(workdir),
             "--print",                 # logs no stdout (bom pro CloudWatch)
-            "--synctex", "0",
+            "--synctex",
             "--keep-logs",             # deixa logs se der ruim
         ]
 
