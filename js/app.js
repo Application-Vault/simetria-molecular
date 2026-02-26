@@ -81,29 +81,43 @@ analiseBtn.addEventListener("click", async () => {
 
     formData.append("payload", JSON.stringify(payload));
 
-    const response = await fetch(baseUrlAnalise, {
+    const response = await fetch(apiUrl, {
       method: "POST",
-      body: formData,
+      body: formData
     });
 
-    if (!response.ok) throw new Error("Erro ao processar a análise");
+    const contentType = response.headers.get("Content-Type") || "";
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(text || "Erro na requisição");
+    }
 
     const blob = await response.blob();
-    const disposition = response.headers.get("Content-Disposition");
-    const match = /filename="?([^"]+)"?/.exec(disposition);
-    const filename = match?.[1] || "resultado.tex";
 
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    window.URL.revokeObjectURL(url);
+    if (contentType.includes("application/pdf")) {
+      // PDF → EXIBE
+      const url = URL.createObjectURL(blob);
 
-  } catch (err) {
-    alert("Erro na análise: " + err.message);
-  }
-});
+      document.getElementById("resultado").innerHTML = `
+    <iframe 
+      src="${url}" 
+      style="width:100%; height:80vh; border:1px solid #444; border-radius:8px;">
+    </iframe>
+  `;
+
+    } else {
+      // TEX → BAIXA
+      const url = URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "resultado.tex";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+  });
 
 function trocarRender() {
   const tipo = document.querySelector('input[name="renderTipo"]:checked').value;
