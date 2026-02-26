@@ -81,7 +81,7 @@ analiseBtn.addEventListener("click", async () => {
 
     formData.append("payload", JSON.stringify(payload));
 
-    const response = await fetch(apiUrl, {
+    const response = await fetch(baseUrlAnalise, {
       method: "POST",
       body: formData
     });
