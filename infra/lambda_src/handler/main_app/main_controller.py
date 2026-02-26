@@ -91,6 +91,31 @@ def identificar_grupo_pontual(xyz_path: str) -> str:
     mol = PymatgenMolecule(especies, coords)
     return PointGroupAnalyzer(mol).sch_symbol  # ex: "D3h"
 
+# filename (sem .xyz) -> grupo pontual
+_MOLECULA_TO_GRUPO = {
+    "benzeno": "D6h",
+    "etano_eclipsado": "D3h",
+    "etano_estrelado": "D3d",
+    "hexafluoreto_enxofre": "Oh",
+    "metano": "Td",
+}
+
+def identificar_grupo_pontual_versao_alternativa(xyz_path: str) -> str:
+    """
+    Substitui pymatgen:
+    - determina grupo pontual a partir do nome do arquivo .xyz
+    Ex: static/moleculas/benzeno.xyz -> D6h
+    """
+    base = os.path.splitext(os.path.basename(xyz_path))[0].lower().strip()
+
+    try:
+        return _MOLECULA_TO_GRUPO[base]
+    except KeyError:
+        raise ValueError(
+            f"Molécula '{base}' não está mapeada para grupo pontual (sem pymatgen). "
+            f"Arquivos suportados: {sorted(_MOLECULA_TO_GRUPO.keys())}"
+        )
+
 
 def encontrar_json_grupo(grupo: str) -> str:
     grupo_proc = grupo.strip().lower()
@@ -115,7 +140,7 @@ def processar_analise_bytes(molecula_bytes: bytes, molecula_filename: str, data:
         f.write(molecula_bytes)
 
     # identifica grupo e acha json
-    grupo_identificado = identificar_grupo_pontual(mol_path)
+    grupo_identificado = identificar_grupo_pontual_versao_alternativa(mol_path)
     grupo_path = encontrar_json_grupo(grupo_identificado)
 
     # roda app
