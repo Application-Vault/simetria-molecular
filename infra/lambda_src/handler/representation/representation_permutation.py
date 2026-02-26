@@ -96,7 +96,7 @@ class PermutationRepresentation(Representation):
         for nome, matriz in rep3d:
             # print(matriz)
             perm = cls._calcular_permutacao(molecule, matriz)
-            print(perm)
+            # print(perm)
 
             inst.adicionar(nome, perm)
 
@@ -192,7 +192,7 @@ class PermutationRepresentation(Representation):
     def get_permutacoes(self) -> dict:
         """Summary
         """
-        print("SISI______________________________")
+        # print("SISI______________________________")
 
         return self._dados
 

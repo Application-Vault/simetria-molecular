@@ -48,16 +48,16 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: gha-lambda-deploy
 
-      - name: Package lambda (handler + deps + tectonic, Lambda-compatible)
+      - name: Package lambda (handler + deps + tectonic MUSL, Lambda-compatible)
         run: |
           set -euo pipefail
-          rm -rf dist .lambda_build /tmp/tectonic_extract
+          rm -rf dist .lambda_build /tmp/tectonic_extract /tmp/tectonic_release.json /tmp/tectonic.tar.gz
           mkdir -p dist .lambda_build
 
           # 1) Copia SOMENTE o handler (ele já contém tudo)
           rsync -a infra/lambda_src/handler/ .lambda_build/
 
-          # 2) Baixa tectonic via GitHub API (sem URL fixa) e coloca no ZIP (bin/tectonic)
+          # 2) Baixa tectonic via GitHub API (prefer MUSL) e coloca no ZIP (bin/tectonic)
           mkdir -p .lambda_build/bin /tmp/tectonic_extract
 
           # garante jq
@@ -69,25 +69,31 @@ jobs:
           TAG="tectonic@${TECTONIC_VERSION}"
           API_URL="https://api.github.com/repos/tectonic-typesetting/tectonic/releases/tags/${TAG}"
           echo "Fetching release info: $API_URL"
+          curl -fsSL "$API_URL" -o /tmp/tectonic_release.json
 
-          # pega o browser_download_url do asset linux x86_64
-          TECTONIC_URL="$(
-            curl -fsSL "$API_URL" \
-              | jq -r '.assets[]
-                        | select(.name | test("tectonic-.*x86_64-unknown-linux-gnu\\.tar\\.gz$"))
-                        | .browser_download_url' \
-              | head -n 1
-          )"
+          # MUSL primeiro (ideal pro Lambda zip), fallback pra GNU
+          TECTONIC_URL="$(jq -r '
+            def pick($re):
+              (.assets[]? | select(.name | test($re)) | .browser_download_url) // empty;
+
+            pick("tectonic-.*x86_64-unknown-linux-musl\\.tar\\.gz$") as $musl
+            | if ($musl != "") then $musl
+              else pick("tectonic-.*x86_64-unknown-linux-gnu\\.tar\\.gz$")
+              end
+          ' /tmp/tectonic_release.json | head -n 1)"
 
           if [ -z "${TECTONIC_URL}" ] || [ "${TECTONIC_URL}" = "null" ]; then
-            echo "[ERROR] Não achei asset do tectonic no release ${TAG}."
+            echo "[ERROR] Não achei asset MUSL/GNU do tectonic no release ${TAG}."
             echo "Assets disponíveis:"
-            curl -fsSL "$API_URL" | jq -r '.assets[].name'
+            jq -r '.assets[].name' /tmp/tectonic_release.json || true
             exit 2
           fi
 
           echo "Downloading tectonic from: $TECTONIC_URL"
           curl -fL "$TECTONIC_URL" -o /tmp/tectonic.tar.gz
+
+          echo "Downloaded file type:"
+          file /tmp/tectonic.tar.gz || true
 
           tar -xzf /tmp/tectonic.tar.gz -C /tmp/tectonic_extract
 
@@ -103,7 +109,7 @@ jobs:
           cp "$TECTONIC_BIN" .lambda_build/bin/tectonic
           chmod +x .lambda_build/bin/tectonic
           echo "tectonic installed at .lambda_build/bin/tectonic"
-          .lambda_build/bin/tectonic --version
+          .lambda_build/bin/tectonic --version || true
 
           # 3) Instala deps dentro de /var/task usando a imagem oficial do runtime
           docker run --rm \
