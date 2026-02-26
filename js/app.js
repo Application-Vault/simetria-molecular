@@ -117,7 +117,10 @@ analiseBtn.addEventListener("click", async () => {
       a.click();
       document.body.removeChild(a);
     }
-  });
+  } catch (err) {
+    alert("Erro na análise: " + err.message);
+  }
+});
 
 function trocarRender() {
   const tipo = document.querySelector('input[name="renderTipo"]:checked').value;
