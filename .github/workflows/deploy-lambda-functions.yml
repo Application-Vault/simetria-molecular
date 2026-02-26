@@ -47,26 +47,24 @@ jobs:
           role-session-name: gha-lambda-deploy
 
 
-      - name: Package lambda (handler root + deps)
+      - name: Package lambda (handler + deps, Lambda-compatible)
         run: |
-          set -e
+          set -euo pipefail
           rm -rf dist .lambda_build
           mkdir -p dist .lambda_build
 
-          # Copia SÓ handler/
+          # Copia o conteúdo do handler/ para a raiz do pacote
           rsync -a infra/lambda_src/handler/ .lambda_build/
 
-          # Mostra versão (debug útil)
-          python --version
+          # Instala deps DENTRO do container do Lambda (glibc compatível)
+          docker run --rm \
+            -v "$PWD/.lambda_build:/var/task" \
+            public.ecr.aws/lambda/python:3.11 \
+            bash -lc "python -m pip install --upgrade pip && \
+                      if [ -f requirements.txt ]; then pip install -r requirements.txt -t /var/task; fi"
 
-          # Instala deps dentro do build (Linux + CPython 3.11)
-          if [ -f ".lambda_build/requirements.txt" ]; then
-            python -m pip install --upgrade pip
-            python -m pip install -r .lambda_build/requirements.txt -t .lambda_build/
-          fi
-
-          cd .lambda_build
-          zip -r ../dist/simetria.zip .
+          # Zip final
+          (cd .lambda_build && zip -r ../dist/simetria.zip .)
 
       - name: Deploy lambda
         run: |
