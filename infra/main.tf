@@ -60,7 +60,7 @@ resource "aws_iam_role_policy_attachment" "basic_exec" {
 
 data "archive_file" "handler_zip" {
   type        = "zip"
-  source_dir  = "${path.module}/lambda_src"
+  source_dir  = "${path.module}/lambda_src/handler"
   output_path = "${path.module}/build/${local.fullname}.zip"
 }
 
@@ -85,6 +85,13 @@ resource "aws_lambda_function" "handler" {
   }
 
   depends_on = [aws_cloudwatch_log_group.lambda]
+
+  lifecycle {
+    ignore_changes = [
+      filename,
+      source_code_hash
+    ]
+  }
 }
 
 # -----------------------------
