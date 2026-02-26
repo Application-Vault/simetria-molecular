@@ -21,9 +21,9 @@ locals {
   github_repo   = "simetria-molecular"
 
   # Restringe pra branch main (push) - bom pra segurança
-  github_sub = "repo:${local.github_org}/${local.github_repo}:ref:refs/heads/main"
+  github_sub = "repo:${local.github_org}/${local.github_repo}:ref:refs/heads/backend"
 
-  github_workflow_ref = "${local.github_org}/${local.github_repo}/.github/workflows/deploy-lambda-functions.yml@refs/heads/main"
+  github_workflow_ref = "${local.github_org}/${local.github_repo}/.github/workflows/deploy-lambda-functions.yml@refs/heads/backend"
 }
 
 ############################################
