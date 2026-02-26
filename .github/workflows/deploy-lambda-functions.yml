@@ -1,0 +1,55 @@
+name: Deploy Lambda Functions
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - "infra/lambda_src/**"
+      - ".github/workflows/deploy-lambda-functions.yml"
+
+env:
+  AWS_REGION: us-east-2
+  LAMBDA_NAME: simetria-molecular-prod
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      simetria: ${{ steps.filter.outputs.simetria }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            simetria:
+              - 'infra/lambda_src/handler/handler.py'
+
+  deploy-simetria:
+    needs: changes
+    if: needs.changes.outputs.simetria == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_LAMBDA_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: gha-lambda-deploy
+
+      - name: Package lambda
+        run: |
+          mkdir -p dist
+          cd infra/lambda_src
+          zip -j ../../dist/simetria.zip handler/handler.py
+
+      - name: Deploy lambda
+        run: |
+          aws lambda update-function-code \
+            --function-name "${{ env.LAMBDA_NAME }}" \
+            --zip-file fileb://dist/simetria.zip
