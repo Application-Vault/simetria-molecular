@@ -165,3 +165,5 @@ def processar_analise_bytes(molecula_bytes: bytes, molecula_filename: str, data:
 
     # fallback
     return _resp_file_text(str(output), nome_tex, "application/x-tex")
+
+    

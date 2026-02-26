@@ -53,17 +53,15 @@ jobs:
           rm -rf dist .lambda_build
           mkdir -p dist .lambda_build
 
-          # Copia o conteúdo do handler/ para a raiz do pacote
           rsync -a infra/lambda_src/handler/ .lambda_build/
 
-          # Instala deps DENTRO do container do Lambda (glibc compatível)
           docker run --rm \
+            --entrypoint /bin/bash \
             -v "$PWD/.lambda_build:/var/task" \
             public.ecr.aws/lambda/python:3.11 \
-            bash -lc "python -m pip install --upgrade pip && \
-                      if [ -f requirements.txt ]; then pip install -r requirements.txt -t /var/task; fi"
+            -lc "python -m pip install --upgrade pip && \
+                if [ -f requirements.txt ]; then pip install -r requirements.txt -t /var/task; fi"
 
-          # Zip final
           (cd .lambda_build && zip -r ../dist/simetria.zip .)
 
       - name: Deploy lambda
