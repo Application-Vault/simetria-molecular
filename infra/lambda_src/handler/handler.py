@@ -7,7 +7,7 @@ from app.controller.controller import processar_analise_bytes
 from app.dto.dto import AnaliseRequest
 
 
-def lambda_handler(event, context):
+def handler(event, context):
 
     path = event.get("rawPath", "")
     method = event.get("requestContext", {}).get("http", {}).get("method")
