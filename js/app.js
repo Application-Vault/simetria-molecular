@@ -8,7 +8,7 @@
 
 const baseUrlAnalise = 'https://x8clyvj53d.execute-api.us-east-2.amazonaws.com/api/analise'
 const baseUrlGrupos = 'https://x8clyvj53d.execute-api.us-east-2.amazonaws.com/api/grupo/';
-const baseUrlMoleculas = 'https://x8clyvj53d.execute-api.us-east-2.amazonaws.comapi/molecula/';
+const baseUrlMoleculas = 'https://x8clyvj53d.execute-api.us-east-2.amazonaws.com/api/molecula/';
 
 
 // const baseUrlAnalise = 'http://localhost:8000/api/analise'
