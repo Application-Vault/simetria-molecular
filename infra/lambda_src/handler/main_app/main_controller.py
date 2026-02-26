@@ -79,17 +79,17 @@ class MoleculeSymmetryApp:
         )
 
 
-def identificar_grupo_pontual(xyz_path: str) -> str:
-    with open(xyz_path) as f:
-        lines = f.readlines()[2:]
-        especies = []
-        coords = []
-        for line in lines:
-            tokens = line.strip().split()
-            especies.append(tokens[0])
-            coords.append([float(x) for x in tokens[1:4]])
-    mol = PymatgenMolecule(especies, coords)
-    return PointGroupAnalyzer(mol).sch_symbol  # ex: "D3h"
+# def identificar_grupo_pontual(xyz_path: str) -> str:
+#     with open(xyz_path) as f:
+#         lines = f.readlines()[2:]
+#         especies = []
+#         coords = []
+#         for line in lines:
+#             tokens = line.strip().split()
+#             especies.append(tokens[0])
+#             coords.append([float(x) for x in tokens[1:4]])
+#     mol = PymatgenMolecule(especies, coords)
+#     return PointGroupAnalyzer(mol).sch_symbol  # ex: "D3h"
 
 # filename (sem .xyz) -> grupo pontual
 _MOLECULA_TO_GRUPO = {
