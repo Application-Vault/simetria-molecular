@@ -92,34 +92,58 @@ class MoleculeSymmetryApp:
 #     return PointGroupAnalyzer(mol).sch_symbol  # ex: "D3h"
 
 # filename (sem .xyz) -> grupo pontual
-_MOLECULA_TO_GRUPO = {
+import os
+import unicodedata
+
+# normaliza "Hexafluoreto de Enxofre" -> "hexafluoreto_de_enxofre"
+def _slug(s: str) -> str:
+    s = (s or "").strip().lower()
+    s = unicodedata.normalize("NFKD", s)
+    s = "".join(ch for ch in s if not unicodedata.combining(ch))
+    s = s.replace("ç", "c")  # opcional (normalização já cobre quase tudo)
+    s = "".join(ch if ch.isalnum() else "_" for ch in s)
+    s = "_".join([p for p in s.split("_") if p])  # remove __
+    return s
+
+# "slug" do nome (2a linha do xyz) -> grupo pontual
+_NOME_TO_GRUPO = {
     "benzeno": "D6h",
     "etano_eclipsado": "D3h",
     "etano_estrelado": "D3d",
-    "hexafluoreto_enxofre": "Oh",
+    "hexafluoreto_de_enxofre": "Oh",
     "metano": "Td",
 }
 
 def identificar_grupo_pontual_versao_alternativa(xyz_path: str) -> str:
-    """
-    Substitui pymatgen:
-    - determina grupo pontual a partir do nome do arquivo .xyz
-    Ex: static/moleculas/benzeno.xyz -> D6h
-    """
+    # 1) tenta ler o "comentário" (linha 2 do .xyz)
+    nome_linha2 = ""
+    try:
+        with open(xyz_path, "r", encoding="utf-8", errors="replace") as f:
+            _ = f.readline()            # linha 1: número de átomos
+            nome_linha2 = f.readline()  # linha 2: comentário/nome
+    except Exception as e:
+        print("[WARN] Falha lendo XYZ:", xyz_path, "err:", repr(e))
+
+    key = _slug(nome_linha2)
+
+    # fallback: se a linha2 vier vazia, tenta pelo filename (benzeno.xyz etc)
+    if not key:
+        base = os.path.splitext(os.path.basename(xyz_path))[0].lower().strip()
+        key = _slug(base)
+
     print("=== DEBUG GRUPO ===")
     print("xyz_path:", xyz_path)
-    print("basename:", os.path.basename(xyz_path))
+    print("linha2_raw:", (nome_linha2 or "").strip())
+    print("key:", key)
     print("===================")
-    base = os.path.splitext(os.path.basename(xyz_path))[0].lower().strip()
 
     try:
-        return _MOLECULA_TO_GRUPO[base]
+        return _NOME_TO_GRUPO[key]
     except KeyError:
         raise ValueError(
-            f"Molécula '{base}' não está mapeada para grupo pontual (sem pymatgen). "
-            f"Arquivos suportados: {sorted(_MOLECULA_TO_GRUPO.keys())}"
+            f"Molécula '{key}' não está mapeada para grupo pontual (sem pymatgen). "
+            f"Suportadas: {sorted(_NOME_TO_GRUPO.keys())}"
         )
-
 
 def encontrar_json_grupo(grupo: str) -> str:
     grupo_proc = grupo.strip().lower()
