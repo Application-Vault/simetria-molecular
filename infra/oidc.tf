@@ -9,6 +9,31 @@ resource "aws_iam_role" "github_lambda_writer" {
 }
 
 ############################################
+# Policy mínima: GitHub Actions pode atualizar código da Lambda
+############################################
+
+data "aws_iam_policy_document" "github_lambda_writer_policy" {
+  statement {
+    sid    = "UpdateLambdaCode"
+    effect = "Allow"
+    actions = [
+      "lambda:UpdateFunctionCode",
+      "lambda:GetFunction",
+      "lambda:GetFunctionConfiguration"
+    ]
+    resources = [
+      aws_lambda_function.handler.arn
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "github_lambda_writer_inline" {
+  name   = "SimetriaMolecularGitHubLambdaWriterPolicy"
+  role   = aws_iam_role.github_lambda_writer.id
+  policy = data.aws_iam_policy_document.github_lambda_writer_policy.json
+}
+
+############################################
 # GitHub OIDC (Actions -> AssumeRole)
 ############################################
 
