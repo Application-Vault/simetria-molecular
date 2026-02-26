@@ -36,27 +36,35 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_LAMBDA_ROLE_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: gha-lambda-deploy
 
+
       - name: Package lambda (handler root + deps)
         run: |
+          set -e
           rm -rf dist .lambda_build
           mkdir -p dist .lambda_build
 
-          # Copia SÓ handler/ (que já contém tudo)
+          # Copia SÓ handler/
           rsync -a infra/lambda_src/handler/ .lambda_build/
 
-          # Instala deps dentro do build (se existir requirements)
+          # Mostra versão (debug útil)
+          python --version
+
+          # Instala deps dentro do build (Linux + CPython 3.11)
           if [ -f ".lambda_build/requirements.txt" ]; then
             python -m pip install --upgrade pip
             python -m pip install -r .lambda_build/requirements.txt -t .lambda_build/
           fi
 
-          # Zip com handler.py na RAIZ
           cd .lambda_build
           zip -r ../dist/simetria.zip .
 
