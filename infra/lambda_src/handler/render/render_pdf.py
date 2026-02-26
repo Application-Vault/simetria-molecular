@@ -36,7 +36,17 @@ class PdfReportGenerator:
         ]
 
         print("[PDF] Running:", " ".join(cmd))
-        proc = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+		env = os.environ.copy()
+		env["HOME"] = "/tmp"
+		env["XDG_CACHE_HOME"] = "/tmp"
+
+		proc = subprocess.run(
+			cmd,
+			stdout=subprocess.PIPE,
+			stderr=subprocess.PIPE,
+			env=env,
+		)
 
         print("[PDF] returncode:", proc.returncode)
         if proc.stdout:
