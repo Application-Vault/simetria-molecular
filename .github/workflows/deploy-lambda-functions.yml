@@ -24,7 +24,7 @@ jobs:
         with:
           filters: |
             simetria:
-              - 'infra/lambda_src/handler/handler.py'
+              - 'infra/lambda_src/handler/**'
 
   deploy-simetria:
     needs: changes
