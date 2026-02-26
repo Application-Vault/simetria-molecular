@@ -12,8 +12,8 @@ from representation.representation_type import RepresentationType
 from analysis.analise_tipo import AnaliseTipo
 from render.render_tipo import RenderTipo
 
-from pymatgen.core.structure import Molecule as PymatgenMolecule
-from pymatgen.symmetry.analyzer import PointGroupAnalyzer
+# from pymatgen.core.structure import Molecule as PymatgenMolecule
+# from pymatgen.symmetry.analyzer import PointGroupAnalyzer
 
 import glob
 
@@ -166,4 +166,3 @@ def processar_analise_bytes(molecula_bytes: bytes, molecula_filename: str, data:
     # fallback
     return _resp_file_text(str(output), nome_tex, "application/x-tex")
 
-    
