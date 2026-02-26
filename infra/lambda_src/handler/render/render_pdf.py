@@ -1,36 +1,28 @@
-"""=================================================================================================================================================
-**                                                   Copyright © 2025 Chanah Yocheved Bat Sarah                                                   **
-**                                                                                                                                                **
-**                                                       Author: Chanah Yocheved Bat Sarah                                                        **
-**                                                          Contact: contact@chanah.dev                                                           **
-**                                                                Date: 2025-06-14                                                                **
-**                                                      License: Custom Attribution License                                                       **
-**                                                                                                                                                **
-**    Este módulo faz parte do projeto de simetria molecular desenvolvido no contexto da disciplina de pós-graduação PGF5261 Teoria de Grupos     **
-**                                                       Aplicada para Sólidos e Moléculas.                                                       **
-**                                                                                                                                                **
-**   Permission is granted to use, copy, modify, and distribute this file, provided that this notice is retained in full and that the origin of   **
-**    the software is clearly and explicitly attributed to the original author. Such attribution must be preserved not only within the source     **
-**       code, but also in any accompanying documentation, public display, distribution, or derived work, in both digital or printed form.        **
-**                                                  For licensing inquiries: contact@chanah.dev                                                   **
-====================================================================================================================================================
-"""
-
-from model.model_molecula import Molecule
-from model.model_grupo import Group
-from .render import Renderer
+import subprocess
 import os
 
-class PdfReportGenerator(Renderer):
+class PdfReportGenerator(object):
+	"""docstring for TextReportGenerator"""
+	def __init__(self, arg):
+		super(PdfReportGenerator, self).__init__()
+		self.arg = arg
 
-    def __init__(self, metadata: dict, molecule: Molecule, group: Group):
-        """Summary
-        """
-        self.metadata = metadata
-        self.molecule = molecule
-        self.group = group
 
-    def render(self, resultados: dict) -> str:
-        """Summary
-        """
-        return "0"
+		def compilar_latex_para_pdf(self, tex_path: str, output_dir: str) -> str:
+			if output_dir is None:
+				output_dir = os.path.dirname(tex_path)
+
+			comando = [
+			"pdflatex",
+			"-interaction=nonstopmode",
+			"-output-directory", output_dir,
+			tex_path
+			]
+
+			result = subprocess.run(comando, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+			if result.returncode != 0:
+				raise RuntimeError(f"Erro na compilação do LaTeX:\n{result.stderr.decode()}")
+
+			base = os.path.splitext(os.path.basename(tex_path))[0]
+			return os.path.join(output_dir, f"{base}.pdf")

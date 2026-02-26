@@ -16,61 +16,72 @@
 ====================================================================================================================================================
 """
 
-from types import ClassMethodDescriptorType
+import json
+import re
+from pathlib import Path
+from representation.representation import Representation
 import numpy as np
 
-class Molecule:
+class TabelaMultiplicacao:
 
-    """Summary
-    """
-    
-    def __init__(self, nome, elementos, coordenadas):
+
+    def __init__(self, representacao: Representation):
         """Summary
         """
-        self.nome = nome
-        self.elementos = elementos
-        self.coordenadas = coordenadas
+        self.representacao = representacao
+        self.operacoes = representacao.nomes()
+        self.dados = self.gerar()
+        # print(self.representacao)
+        print(">>>>>>>>>>>>>>>>>>TABELA MULTIPLICACAO>>>>>>>>>>>>>>>>>>>>>")
+        # print(self.dados)
 
-    @classmethod
-    def from_file(cls, path_file):
+
+
+    def gerar(self) -> dict:
         """Summary
+
+        Raises:
+            ValueError: Description
         """
-        with open(path_file, 'r') as f:
-            linhas = f.readlines()
-        nome, elementos, coordenadas = cls._carregar(linhas)
-        return cls(nome, elementos, coordenadas)
-
-    @classmethod
-    def from_data(cls, data: str):
-        """Summary
+        print(">>>>>>>>>>>>>>>>>>TABELA MULTIPLICACAO2>>>>>>>>>>>>>>>>>>>>>")
+        # print(self.operacoes)
         """
-        linhas = data.splitlines()
-        nome, elementos, coordenadas = cls._carregar(linhas)
-        return cls(nome, elementos, coordenadas)
+        Gera a tabela de multiplicação: para cada par (A, B), calcula C = A * B
+        tal que a operação composta tenha a mesma matriz (ou permutação) que C.
 
-    @classmethod
-    def _carregar(cls, linhas):
-        """Summary
+        Raises:
+            ValueError: Description
         """
-        natomos = int(linhas[0])
-        nome = linhas[1]
-        # print(">>>>>>>>>>>>>>>>>>>>")
-        # print(nome)
-        dados = linhas[2:2 + natomos]
+        i = 1
+        tabela = {}
+        for a in self.operacoes:
+            linha = {}
+            rep_a = self.representacao[a]
+            for b in self.operacoes:
+                # print(i)
+                i= i+1
+                rep_b = self.representacao[b]
+                comp = self.representacao.compor(rep_a, rep_b)
 
-        elementos = []
-        coordenadas = []
+                # Buscar nome do resultado da permutação composta
+                nome_resultado = None
+                for c in self.operacoes:
+                    if np.allclose(self.representacao[c], comp):
+                        nome_resultado = c
+                        break
 
-        for linha in dados:
-            partes = linha.split()
-            elemento = partes[0]
-            coords = np.array(list(map(float, partes[1:4])))
-            elementos.append(elemento)
-            coordenadas.append(coords)
-        return nome, elementos, coordenadas
+                if nome_resultado is None:
+                    raise ValueError(f"Composição {a} * {b} não encontrada.")
 
-    def como_tuplas(self):
-        return list(zip(self.elementos, self.coordenadas))
+                linha[b] = {
+                    "nome": nome_resultado,
+                    "permutacao_op1": rep_a,
+                    "permutacao_op2": rep_b,
+                    "permutacao_resultante": comp
+                }
 
-    def __len__(self):
-        return len(self.elementos)
+            tabela[a] = linha
+            # print(tabela)
+        return tabela
+
+
