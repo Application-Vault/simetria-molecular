@@ -42,11 +42,25 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: gha-lambda-deploy
 
-      - name: Package lambda
+      - name: Package lambda (code + deps)
         run: |
+          rm -rf dist
           mkdir -p dist
-          cd infra/lambda_src
-          zip -j ../../dist/simetria.zip handler/handler.py
+
+          # 1) copia lambda_src para staging (pra não sujar seu repo com deps)
+          rm -rf .lambda_build
+          mkdir -p .lambda_build
+          rsync -a infra/lambda_src/ .lambda_build/
+
+          # 2) instala dependências se existir requirements.txt
+          if [ -f ".lambda_build/requirements.txt" ]; then
+            python -m pip install --upgrade pip
+            python -m pip install -r .lambda_build/requirements.txt -t .lambda_build/
+          fi
+
+          # 3) cria zip preservando estrutura
+          cd .lambda_build
+          zip -r ../dist/simetria.zip .
 
       - name: Deploy lambda
         run: |
