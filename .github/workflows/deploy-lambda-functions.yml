@@ -10,7 +10,6 @@ on:
 env:
   AWS_REGION: us-east-2
   LAMBDA_NAME: simetria-molecular-prod
-  # ajuste se quiser pin de versão do tectonic:
   TECTONIC_VERSION: "0.15.0"
 
 jobs:
@@ -39,8 +38,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # setup-python aqui é opcional (a gente usa docker pra pip),
-      # mas pode deixar se você usa python em outros steps.
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -54,22 +51,47 @@ jobs:
       - name: Package lambda (handler + deps + tectonic, Lambda-compatible)
         run: |
           set -euo pipefail
-          rm -rf dist .lambda_build
+          rm -rf dist .lambda_build /tmp/tectonic_extract
           mkdir -p dist .lambda_build
 
           # 1) Copia SOMENTE o handler (ele já contém tudo)
           rsync -a infra/lambda_src/handler/ .lambda_build/
 
           # 2) Baixa tectonic (Linux x86_64) e coloca dentro do ZIP (bin/tectonic)
-          mkdir -p .lambda_build/bin
-          curl -L -o /tmp/tectonic.tar.gz \
-            "https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic@${TECTONIC_VERSION}/tectonic-x86_64-unknown-linux-gnu.tar.gz"
-          tar -xzf /tmp/tectonic.tar.gz -C /tmp
-          mv /tmp/tectonic .lambda_build/bin/tectonic
+          mkdir -p .lambda_build/bin /tmp/tectonic_extract
+
+          TECTONIC_URL="https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic@${TECTONIC_VERSION}/tectonic-x86_64-unknown-linux-gnu.tar.gz"
+
+          echo "Downloading tectonic from: $TECTONIC_URL"
+          curl -fL "$TECTONIC_URL" -o /tmp/tectonic.tar.gz
+
+          echo "Downloaded file type:"
+          file /tmp/tectonic.tar.gz || true
+          echo "First bytes (debug):"
+          head -c 120 /tmp/tectonic.tar.gz | cat || true
+          echo
+
+          tar -xzf /tmp/tectonic.tar.gz -C /tmp/tectonic_extract
+
+          # acha o binário tectonic dentro do tarball (sem assumir caminho)
+          TECTONIC_BIN="$(find /tmp/tectonic_extract -type f -name tectonic -perm -u+x 2>/dev/null | head -n 1 || true)"
+          if [ -z "${TECTONIC_BIN}" ]; then
+            # fallback: às vezes vem sem bit de execução
+            TECTONIC_BIN="$(find /tmp/tectonic_extract -type f -name tectonic 2>/dev/null | head -n 1 || true)"
+          fi
+          if [ -z "${TECTONIC_BIN}" ]; then
+            echo "[ERROR] tectonic binary not found inside tarball."
+            echo "List extract dir:"
+            find /tmp/tectonic_extract -maxdepth 3 -type f | head -n 200
+            exit 2
+          fi
+
+          cp "$TECTONIC_BIN" .lambda_build/bin/tectonic
           chmod +x .lambda_build/bin/tectonic
+          echo "tectonic installed at .lambda_build/bin/tectonic"
+          .lambda_build/bin/tectonic --version || true
 
           # 3) Instala deps dentro de /var/task usando a imagem oficial do runtime
-          #    (IMPORTANTE: montar /var/task e instalar lá)
           docker run --rm \
             --entrypoint /bin/bash \
             -v "$PWD/.lambda_build:/var/task" \
@@ -85,7 +107,7 @@ jobs:
           # 4) Zip com handler.py na RAIZ
           (cd .lambda_build && zip -r ../dist/simetria.zip .)
 
-          # 5) Info útil (tamanho do zip) — ajuda a ver se vai estourar limite
+          # 5) Info útil
           ls -lh dist/simetria.zip
 
       - name: Deploy lambda
