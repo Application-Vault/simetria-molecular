@@ -92,6 +92,7 @@ def _resp_text(text, content_type):
     }
 
 
+
 def _resp_json(obj, status=200):
     return {
         "statusCode": status,
