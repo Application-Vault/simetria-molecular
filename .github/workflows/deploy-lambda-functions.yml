@@ -2,7 +2,7 @@ name: Deploy Lambda Functions
 
 on:
   push:
-    branches: [ "backend" ]
+    branches: ["backend"]
     paths:
       - "infra/lambda_src/**"
       - ".github/workflows/deploy-lambda-functions.yml"
@@ -10,6 +10,8 @@ on:
 env:
   AWS_REGION: us-east-2
   LAMBDA_NAME: simetria-molecular-prod
+  # ajuste se quiser pin de versão do tectonic:
+  TECTONIC_VERSION: "0.15.0"
 
 jobs:
   changes:
@@ -33,9 +35,12 @@ jobs:
     permissions:
       id-token: write
       contents: read
+
     steps:
       - uses: actions/checkout@v4
 
+      # setup-python aqui é opcional (a gente usa docker pra pip),
+      # mas pode deixar se você usa python em outros steps.
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -46,29 +51,45 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: gha-lambda-deploy
 
-
-      - name: Package lambda (handler + deps, Lambda-compatible)
+      - name: Package lambda (handler + deps + tectonic, Lambda-compatible)
         run: |
           set -euo pipefail
           rm -rf dist .lambda_build
           mkdir -p dist .lambda_build
 
+          # 1) Copia SOMENTE o handler (ele já contém tudo)
           rsync -a infra/lambda_src/handler/ .lambda_build/
 
+          # 2) Baixa tectonic (Linux x86_64) e coloca dentro do ZIP (bin/tectonic)
+          mkdir -p .lambda_build/bin
+          curl -L -o /tmp/tectonic.tar.gz \
+            "https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic@${TECTONIC_VERSION}/tectonic-x86_64-unknown-linux-gnu.tar.gz"
+          tar -xzf /tmp/tectonic.tar.gz -C /tmp
+          mv /tmp/tectonic .lambda_build/bin/tectonic
+          chmod +x .lambda_build/bin/tectonic
+
+          # 3) Instala deps dentro de /var/task usando a imagem oficial do runtime
+          #    (IMPORTANTE: montar /var/task e instalar lá)
           docker run --rm \
             --entrypoint /bin/bash \
             -v "$PWD/.lambda_build:/var/task" \
             public.ecr.aws/lambda/python:3.11 \
-            -lc "python -m pip install --upgrade pip && \
-                if [ -f requirements.txt ]; then \
-                  pip install --only-binary=:all: -r requirements.txt -t /var/task; \
-                fi"
+            -lc '
+              set -euo pipefail
+              python -m pip install --upgrade pip
+              if [ -f /var/task/requirements.txt ]; then
+                pip install -r /var/task/requirements.txt -t /var/task
+              fi
+            '
 
+          # 4) Zip com handler.py na RAIZ
           (cd .lambda_build && zip -r ../dist/simetria.zip .)
+
+          # 5) Info útil (tamanho do zip) — ajuda a ver se vai estourar limite
+          ls -lh dist/simetria.zip
 
       - name: Deploy lambda
         run: |
           aws lambda update-function-code \
             --function-name "${{ env.LAMBDA_NAME }}" \
             --zip-file fileb://dist/simetria.zip
-      
