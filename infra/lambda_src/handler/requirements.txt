@@ -1,4 +1,4 @@
 pydantic==1.10.13
-numpy
+numpy==1.26.4
 
 
