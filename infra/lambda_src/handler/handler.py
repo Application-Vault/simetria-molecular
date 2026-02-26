@@ -9,7 +9,6 @@ from main_app.main_dto import AnaliseRequest
 
 ALLOWED_ORIGIN = "https://application-vault.github.io"
 
-
 def handler(event, context):
     path = event.get("rawPath", "")
     method = event.get("requestContext", {}).get("http", {}).get("method")

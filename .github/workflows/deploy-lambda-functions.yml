@@ -57,39 +57,53 @@ jobs:
           # 1) Copia SOMENTE o handler (ele já contém tudo)
           rsync -a infra/lambda_src/handler/ .lambda_build/
 
-          # 2) Baixa tectonic (Linux x86_64) e coloca dentro do ZIP (bin/tectonic)
+          # 2) Baixa tectonic via GitHub API (sem URL fixa) e coloca no ZIP (bin/tectonic)
           mkdir -p .lambda_build/bin /tmp/tectonic_extract
 
-          TECTONIC_URL="https://github.com/tectonic-typesetting/tectonic/releases/download/tectonic@${TECTONIC_VERSION}/tectonic-x86_64-unknown-linux-gnu.tar.gz"
+          # garante jq
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update -y
+            sudo apt-get install -y jq
+          fi
+
+          TAG="tectonic@${TECTONIC_VERSION}"
+          API_URL="https://api.github.com/repos/tectonic-typesetting/tectonic/releases/tags/${TAG}"
+          echo "Fetching release info: $API_URL"
+
+          # pega o browser_download_url do asset linux x86_64
+          TECTONIC_URL="$(
+            curl -fsSL "$API_URL" \
+              | jq -r '.assets[]
+                        | select(.name | test("tectonic-.*x86_64-unknown-linux-gnu\\.tar\\.gz$"))
+                        | .browser_download_url' \
+              | head -n 1
+          )"
+
+          if [ -z "${TECTONIC_URL}" ] || [ "${TECTONIC_URL}" = "null" ]; then
+            echo "[ERROR] Não achei asset do tectonic no release ${TAG}."
+            echo "Assets disponíveis:"
+            curl -fsSL "$API_URL" | jq -r '.assets[].name'
+            exit 2
+          fi
 
           echo "Downloading tectonic from: $TECTONIC_URL"
           curl -fL "$TECTONIC_URL" -o /tmp/tectonic.tar.gz
 
-          echo "Downloaded file type:"
-          file /tmp/tectonic.tar.gz || true
-          echo "First bytes (debug):"
-          head -c 120 /tmp/tectonic.tar.gz | cat || true
-          echo
-
           tar -xzf /tmp/tectonic.tar.gz -C /tmp/tectonic_extract
 
           # acha o binário tectonic dentro do tarball (sem assumir caminho)
-          TECTONIC_BIN="$(find /tmp/tectonic_extract -type f -name tectonic -perm -u+x 2>/dev/null | head -n 1 || true)"
-          if [ -z "${TECTONIC_BIN}" ]; then
-            # fallback: às vezes vem sem bit de execução
-            TECTONIC_BIN="$(find /tmp/tectonic_extract -type f -name tectonic 2>/dev/null | head -n 1 || true)"
-          fi
+          TECTONIC_BIN="$(find /tmp/tectonic_extract -type f -name tectonic 2>/dev/null | head -n 1 || true)"
           if [ -z "${TECTONIC_BIN}" ]; then
             echo "[ERROR] tectonic binary not found inside tarball."
             echo "List extract dir:"
-            find /tmp/tectonic_extract -maxdepth 3 -type f | head -n 200
-            exit 2
+            find /tmp/tectonic_extract -maxdepth 4 -type f | head -n 200
+            exit 3
           fi
 
           cp "$TECTONIC_BIN" .lambda_build/bin/tectonic
           chmod +x .lambda_build/bin/tectonic
           echo "tectonic installed at .lambda_build/bin/tectonic"
-          .lambda_build/bin/tectonic --version || true
+          .lambda_build/bin/tectonic --version
 
           # 3) Instala deps dentro de /var/task usando a imagem oficial do runtime
           docker run --rm \
