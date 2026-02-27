@@ -75,7 +75,7 @@ resource "aws_lambda_function" "handler" {
   source_code_hash = data.archive_file.handler_zip.output_base64sha256
 
   memory_size = 512
-  timeout     = 15
+  timeout     = 45
 
   environment {
     variables = {

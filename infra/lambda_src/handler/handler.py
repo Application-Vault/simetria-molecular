@@ -94,17 +94,30 @@ def _resp_text(text, content_type):
 
 
 
-def _resp_json(obj, status=200):
+# def _resp_json(obj, status=200):
+#     return {
+#         "statusCode": status,
+#         "headers": {
+#             "Content-Type": "application/json",
+#             "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+#         },
+#         "body": json.dumps(obj),
+#     }
+
+
+import json, base64
+
+def _resp_json(data: dict, status: int = 200, headers: dict | None = None):
+    h = {
+        "Content-Type": "application/json; charset=utf-8",
+    }
+    if headers:
+        h.update(headers)
     return {
         "statusCode": status,
-        "headers": {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
-        },
-        "body": json.dumps(obj),
+        "headers": h,
+        "body": json.dumps(data, ensure_ascii=False),
     }
-
-
 
 
 

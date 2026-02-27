@@ -174,62 +174,60 @@ def processar_analise_bytes(molecula_bytes: bytes, molecula_filename: str, data:
     workdir = f"/tmp/analise_{temp_id}"
     os.makedirs(workdir, exist_ok=True)
 
-    # salva xyz em /tmp
     mol_path = os.path.join(workdir, molecula_filename or "molecula.xyz")
     with open(mol_path, "wb") as f:
         f.write(molecula_bytes)
 
-    # identifica grupo e acha json
     grupo_identificado = identificar_grupo_pontual_versao_alternativa(mol_path)
     grupo_path = encontrar_json_grupo(grupo_identificado)
 
-    # roda app
     app = MoleculeSymmetryApp.from_files(mol_path, grupo_path)
 
-    # logs do request
-    fmt = (getattr(getattr(data, "render", None), "formato", None) or "tex").strip().lower()
-    print("[REQ] uid=", temp_id, "formato=", fmt, "operacao_id=", getattr(data.render, "operacao_id", None))
+    # 🔑 decide formato
+    # (garante que 'pdf' e 'tex' sejam entendidos)
+    formato = (data.render.formato or "").strip().lower()
 
-    output = app.run(selected_op=data.render.operacao_id, config=data, uid=temp_id)
-
-    # nomes dos arquivos
-    nome_base = (molecula_filename or "molecula.xyz").rsplit(".", 1)[0]
-    nome_tex = (
-        "Analise_Simetria_Molecula_Personalizada.tex"
-        if nome_base.lower() in ["outro", "outro.xyz", "personalizado"]
-        else f"Analise_Simetria_Molecula_{nome_base}.tex"
+    # roda análises e gera TEX SEMPRE
+    # (ajuste aqui se sua app.run hoje retorna direto string/pdf dependendo do formato)
+    tex = (
+        SymmetryAnalyzer
+        .de(app.group, app.molecule)
+        .usar(RepresentationType.PERMUTATION)
+        .configurar(
+            [AnaliseTipo[n.upper()] for n, ativo in data.analises.items() if ativo],
+            temp_id
+        )
+        .executar()
+        .renderizar(RenderTipo.TEX)
     )
-    nome_pdf = nome_tex.replace(".tex", ".pdf")
 
-    # -----------------------------
-    # PDF: mostrar inline
-    # -----------------------------
-    if fmt == "pdf":
-        if not isinstance(output, (bytes, bytearray)):
-            # se ainda veio TEX, é bug no fluxo: loga e devolve TEX pra não quebrar
-            print("[WARN] formato=pdf mas output nao é bytes:", type(output))
-            return _resp_file_text(str(output), nome_tex, "application/x-tex")
+    resp = {
+        "ok": True,
+        "uuid": temp_id,
+        "molecula": getattr(app.molecule, "nome", None),
+        "grupo": getattr(app.group, "nome", None),
+        "tex": tex,                 # ✅ sempre vai pro “Resultado”
+    }
 
-        return {
-            "statusCode": 200,
-            "isBase64Encoded": True,
-            "headers": {
-                "Content-Type": "application/pdf",
-                "Content-Disposition": f'inline; filename="{nome_pdf}"',  # <<< EXIBE
+    # só compila pdf se marcado
+    if formato == "pdf":
+        pdf_bytes = PdfReportGenerator(
+            metadata={
+                "molecula": app.molecule.nome,
+                "grupo": app.group.nome,
+                "ordem": len(app.group.operacoes),
+                "uuid": temp_id,
+                "data": datetime.today().strftime("%Y-%m-%d %H:%M"),
+                "sistema": app.group.sistema,
             },
-            "body": base64.b64encode(bytes(output)).decode("ascii"),
-        }
+            resultado=(SymmetryAnalyzer.de(app.group, app.molecule)
+                        .usar(RepresentationType.PERMUTATION)
+                        .configurar([AnaliseTipo[n.upper()] for n, ativo in data.analises.items() if ativo], temp_id)
+                        .executar()
+                        ._resultado)  # se você não quiser recalcular, guarde o resultado em variável
+        ).gerar_pdf()
 
-    # -----------------------------
-    # TEX: baixar como anexo
-    # -----------------------------
-    if isinstance(output, str):
-        # _resp_file_text já usa attachment; se quiser garantir, mantém assim:
-        return _resp_file_text(output, nome_tex, "application/x-tex")
+        resp["pdf_base64"] = base64.b64encode(pdf_bytes).decode("ascii")
 
-    # fallback: se veio bytes mas pediram tex, devolve como download de pdf (não ideal, mas não quebra)
-    if isinstance(output, (bytes, bytearray)):
-        return _resp_file_bytes(bytes(output), nome_pdf, "application/pdf")
-
-    return _resp_file_text(str(output), nome_tex, "application/x-tex")
+    return _resp_json(resp)
 
