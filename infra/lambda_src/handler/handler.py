@@ -106,19 +106,11 @@ def _resp_text(text, content_type):
 
 
 import json, base64
-
 def _resp_json(data: dict, status: int = 200, headers: dict | None = None):
-    h = {
-        "Content-Type": "application/json; charset=utf-8",
-    }
+    h = {"Content-Type": "application/json; charset=utf-8"}
     if headers:
         h.update(headers)
-    return {
-        "statusCode": status,
-        "headers": h,
-        "body": json.dumps(data, ensure_ascii=False),
-    }
-
+    return {"statusCode": status, "headers": h, "body": json.dumps(data, ensure_ascii=False)}
 
 
 
