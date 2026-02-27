@@ -11,6 +11,7 @@ from engine.engine_symmetry_analyser import SymmetryAnalyzer
 from representation.representation_type import RepresentationType
 from analysis.analise_tipo import AnaliseTipo
 from render.render_tipo import RenderTipo
+from render.render_pdf import PdfReportGenerator
 
 # from pymatgen.core.structure import Molecule as PymatgenMolecule
 # from pymatgen.symmetry.analyzer import PointGroupAnalyzer
