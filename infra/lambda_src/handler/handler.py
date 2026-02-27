@@ -91,9 +91,6 @@ def _resp_text(text, content_type):
         "body": text,
     }
 
-
-
-
 # def _resp_json(obj, status=200):
 #     return {
 #         "statusCode": status,
@@ -103,7 +100,6 @@ def _resp_text(text, content_type):
 #         },
 #         "body": json.dumps(obj),
 #     }
-
 
 import json, base64
 def _resp_json(data: dict, status: int = 200, headers: dict | None = None):
