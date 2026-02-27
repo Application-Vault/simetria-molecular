@@ -67,19 +67,18 @@ def handler(event, context):
         data = AnaliseRequest.parse_raw(payload_json)
 
         # controller já devolve dict no formato lambda proxy
-        resp = processar_analise_bytes(molecula_bytes, molecula_filename, data)
+        data_dict = processar_analise_bytes(molecula_bytes, molecula_filename, data)
 
-        # garante CORS aqui (mesmo com CORS no API GW, isso ajuda em erros/arquivos)
-        resp.setdefault("headers", {})
-        resp["headers"]["Access-Control-Allow-Origin"] = ALLOWED_ORIGIN
-        resp["headers"]["Access-Control-Expose-Headers"] = "Content-Disposition,Content-Type"
-
-        return resp
+        return _resp_json(
+            data_dict,
+            200,
+            headers={
+                "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+                "Access-Control-Expose-Headers": "Content-Disposition,Content-Type",
+            },
+        )
 
     return _resp_json({"error": "Not Found"}, 404)
-
-
-
 
 def _resp_text(text, content_type):
     return {

@@ -229,11 +229,4 @@ def processar_analise_bytes(molecula_bytes: bytes, molecula_filename: str, data:
 
         resp["pdf_base64"] = base64.b64encode(pdf_bytes).decode("ascii")
 
-    return _resp_json(resp)
-
-def _resp_json(data: dict, status: int = 200, headers: dict | None = None):
-    h = {"Content-Type": "application/json; charset=utf-8"}
-    if headers:
-        h.update(headers)
-    return {"statusCode": status, "headers": h, "body": json.dumps(data, ensure_ascii=False)}
-
+    return resp
