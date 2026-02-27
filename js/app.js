@@ -2,70 +2,88 @@
 /* ENDPOINTS BACKEND          */
 /******************************/
 
-// const baseUrlAnalise = 'https://naraavila-simetria-molecular.hf.space/api/analise'
-// const baseUrlGrupos = 'https://naraavila-simetria-molecular.hf.space/api/grupo/';
-// const baseUrlMoleculas = 'https://naraavila-simetria-molecular.hf.space/api/molecula/';
-
-// const baseUrlAnalise = 'http://localhost:8000/api/analise'
-// const baseUrlGrupos = 'http://localhost:8000/api/grupo/';
-// const baseUrlMoleculas = 'http://localhost:8000/api/molecula/';
-
 const baseUrlAnalise = 'https://x8clyvj53d.execute-api.us-east-2.amazonaws.com/api/analise';
 const baseUrlGrupos = 'https://x8clyvj53d.execute-api.us-east-2.amazonaws.com/api/grupo/';
 const baseUrlMoleculas = 'https://x8clyvj53d.execute-api.us-east-2.amazonaws.com/api/molecula/';
 
 /******************************/
-/* UTILIDADES RESULTADO       */
+/* STATE + UTIL               */
 /******************************/
 
-let __resultadoObjectUrl = null;
+let __pdfObjectUrl = null;
 
-function getResultadoEl() {
-  let el = document.getElementById("resultado");
+function revokePdfUrl() {
+  if (__pdfObjectUrl) {
+    URL.revokeObjectURL(__pdfObjectUrl);
+    __pdfObjectUrl = null;
+  }
+}
+
+function $(id) {
+  return document.getElementById(id);
+}
+
+function safeValue(id, fallback = "") {
+  return $(id)?.value ?? fallback;
+}
+
+function selectedValue(selector, fallback = null) {
+  return document.querySelector(selector)?.value ?? fallback;
+}
+
+function setDisabled(el, disabled) {
+  if (!el) return;
+  el.disabled = !!disabled;
+  el.style.opacity = disabled ? "0.65" : "1";
+  el.style.cursor = disabled ? "not-allowed" : "pointer";
+}
+
+function showError(msg) {
+  alert("Erro na análise: " + msg);
+}
+
+function showStatus(msg) {
+  const el = $("status");
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = msg ? "block" : "none";
+}
+
+function ensureTextAreaResultado() {
+  // ✅ você quer TEX em resultado. Então #resultado precisa ser textarea
+  // se não existir, cria (fallback).
+  let el = $("resultado");
   if (el) return el;
 
-  // fallback automático se não existir no HTML
-  el = document.createElement("div");
+  el = document.createElement("textarea");
   el.id = "resultado";
-  el.style.marginTop = "20px";
+  el.rows = 12;
+  el.style.width = "100%";
+  el.style.marginTop = "16px";
   document.body.appendChild(el);
   return el;
 }
 
-function cleanupResultadoUrl() {
-  if (__resultadoObjectUrl) {
-    URL.revokeObjectURL(__resultadoObjectUrl);
-    __resultadoObjectUrl = null;
-  }
-}
-
-function getFilenameFromDisposition(disposition, fallback) {
-  if (!disposition) return fallback;
-
-  const m1 = disposition.match(/filename\*\s*=\s*UTF-8''([^;]+)/i);
-  if (m1 && m1[1]) return decodeURIComponent(m1[1]);
-
-  const m2 = disposition.match(/filename\s*=\s*"([^"]+)"/i);
-  if (m2 && m2[1]) return m2[1];
-
-  const m3 = disposition.match(/filename\s*=\s*([^;]+)/i);
-  if (m3 && m3[1]) return m3[1].trim();
-
-  return fallback;
+function clearPdfUi() {
+  // se você tiver um botão/link/placeholder, limpa aqui.
+  const pdfBtn = $("abrirPdf");
+  if (pdfBtn) pdfBtn.style.display = "none";
+  revokePdfUrl();
 }
 
 /******************************/
 /* SELECT MOLECULA            */
 /******************************/
 
-const moleculaSelect = document.getElementById("moleculaSelect");
-const moleculaOutput = document.getElementById("moleculaOutput");
+const moleculaSelect = $("moleculaSelect");
+const moleculaOutput = $("moleculaOutput");
 
-moleculaSelect?.addEventListener('change', () => {
-
+moleculaSelect?.addEventListener("change", async () => {
   const moleculaSelecionada = moleculaSelect.value;
 
-  if (moleculaSelecionada === 'outro') {
+  if (!moleculaOutput) return;
+
+  if (moleculaSelecionada === "outro") {
     moleculaOutput.readOnly = false;
     moleculaOutput.value = "";
     return;
@@ -73,121 +91,32 @@ moleculaSelect?.addEventListener('change', () => {
 
   if (!moleculaSelecionada) {
     moleculaOutput.value = "";
+    moleculaOutput.readOnly = true;
     return;
   }
 
-  fetch(baseUrlMoleculas + moleculaSelecionada)
-    .then(response => response.ok ? response.text() : Promise.reject("Erro ao carregar o XYZ"))
-    .then(data => {
-      moleculaOutput.value = data;
-      moleculaOutput.readOnly = true;
-    })
-    .catch(err => {
-      moleculaOutput.value = err;
-    });
-});
-
-/******************************/
-/* BOTÃO ANÁLISE              */
-/******************************/
-
-const analiseBtn = document.getElementById("botaoAnalise");
-
-analiseBtn?.addEventListener("click", async () => {
-
-  const tipo = document.querySelector('input[name="renderTipo"]:checked')?.value;
-
-  const formData = new FormData();
-
-  const moleculaText = document.getElementById("moleculaOutput")?.value ?? "";
-  const moleculaBlob = new Blob([moleculaText], { type: "text/plain" });
-  formData.append("molecula", moleculaBlob, "molecula.xyz");
-
-  let paleta = null;
-  let analises = {};
-  let formato = null;
-
-  if (tipo === "grafico") {
-    paleta = document.querySelector('input[name="paletaCores"]:checked')?.value ?? "PASTEL";
-    formato = document.querySelector('input[name="formatoGrafico"]:checked')?.value ?? "3d";
-  } else {
-    formato = document.querySelector('input[name="formatoTexto"]:checked')?.value ?? "tex";
-    document.querySelectorAll('input[name="analises"]:checked').forEach(input => {
-      analises[input.value] = true;
-    });
-  }
-
-  const payload = {
-    render: {
-      tipo,
-      formato,
-      paleta
-    },
-    analises
-  };
-
-  formData.append("payload", JSON.stringify(payload));
-
   try {
-    const response = await fetch(baseUrlAnalise, {
-      method: "POST",
-      body: formData
-    });
-
-    const contentType = response.headers.get("Content-Type") || "";
-    const disposition = response.headers.get("Content-Disposition") || "";
-
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(text || "Erro na requisição");
-    }
-
-    const blob = await response.blob();
-    const isPdf = contentType.includes("application/pdf");
-
-    cleanupResultadoUrl();
-
-    if (isPdf) {
-      // PDF → EXIBE
-      __resultadoObjectUrl = URL.createObjectURL(blob);
-
-      const el = getResultadoEl();
-      el.innerHTML = `
-        <iframe 
-          src="${__resultadoObjectUrl}" 
-          style="width:100%; height:80vh; border:1px solid #444; border-radius:8px;">
-        </iframe>
-      `;
-    } else {
-      // TEX → BAIXA
-      __resultadoObjectUrl = URL.createObjectURL(blob);
-
-      const filename = getFilenameFromDisposition(disposition, "resultado.tex");
-
-      const a = document.createElement("a");
-      a.href = __resultadoObjectUrl;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-
-      setTimeout(cleanupResultadoUrl, 2000);
-    }
-
-  } catch (err) {
-    alert("Erro na análise: " + err.message);
+    showStatus("Carregando molécula...");
+    const resp = await fetch(baseUrlMoleculas + moleculaSelecionada);
+    if (!resp.ok) throw new Error("Erro ao carregar o XYZ");
+    const xyz = await resp.text();
+    moleculaOutput.value = xyz;
+    moleculaOutput.readOnly = true;
+    showStatus("");
+  } catch (e) {
+    moleculaOutput.value = String(e?.message ?? e);
+    showStatus("");
   }
 });
 
 /******************************/
-/* TROCA ENTRE TEXTO/GRÁFICO */
+/* TROCA ENTRE TEXTO/GRÁFICO  */
 /******************************/
 
 function trocarRender() {
-  const tipo = document.querySelector('input[name="renderTipo"]:checked')?.value;
-
-  const divTexto = document.getElementById("render-texto");
-  const divGrafico = document.getElementById("render-grafico");
+  const tipo = selectedValue('input[name="renderTipo"]:checked', "texto");
+  const divTexto = $("render-texto");
+  const divGrafico = $("render-grafico");
 
   if (!divTexto || !divGrafico) return;
 
@@ -198,6 +127,140 @@ function trocarRender() {
     divTexto.style.display = "none";
     divGrafico.style.display = "block";
   }
+
+  // quando troca, limpa PDF anterior e mantém TEX
+  clearPdfUi();
 }
 
-document.addEventListener("DOMContentLoaded", trocarRender);
+document.addEventListener("DOMContentLoaded", () => {
+  trocarRender();
+
+  // se seus radios tiverem onchange, isso garante
+  document.querySelectorAll('input[name="renderTipo"]').forEach(r => {
+    r.addEventListener("change", trocarRender);
+  });
+});
+
+/******************************/
+/* BOTÃO ANÁLISE              */
+/******************************/
+
+const analiseBtn = $("botaoAnalise");
+
+// (opcional) botão/link para abrir pdf em outra aba
+// crie um elemento no HTML com id="abrirPdf" (button ou a). Se não existir, a gente cria.
+function ensureAbrirPdfButton() {
+  let btn = $("abrirPdf");
+  if (btn) return btn;
+
+  btn = document.createElement("button");
+  btn.id = "abrirPdf";
+  btn.textContent = "Abrir PDF em outra aba";
+  btn.type = "button";
+  btn.style.display = "none";
+  btn.style.marginTop = "12px";
+  btn.style.padding = "10px 14px";
+  btn.style.borderRadius = "10px";
+  btn.style.border = "1px solid #ccc";
+  btn.style.background = "white";
+  btn.style.cursor = "pointer";
+
+  const after = ensureTextAreaResultado();
+  after.insertAdjacentElement("afterend", btn);
+  return btn;
+}
+
+function openPdfInNewTab(url) {
+  // abre em outra aba
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+
+analiseBtn?.addEventListener("click", async () => {
+  const tipo = selectedValue('input[name="renderTipo"]:checked', "texto");
+  const formatoTexto = selectedValue('input[name="formatoTexto"]:checked', "tex"); // "tex" ou "pdf"
+  const formatoGrafico = selectedValue('input[name="formatoGrafico"]:checked', "3d");
+  const paleta = selectedValue('input[name="paletaCores"]:checked', "PASTEL");
+
+  // TEX sempre aparece em resultado: então só vamos mandar pdf quando user escolher pdf
+  const querPdf = (tipo === "texto" && String(formatoTexto).toLowerCase() === "pdf");
+
+  // monta FormData
+  const formData = new FormData();
+
+  const moleculaText = safeValue("moleculaOutput", "");
+  const moleculaBlob = new Blob([moleculaText], { type: "text/plain" });
+  formData.append("molecula", moleculaBlob, "molecula.xyz");
+
+  // analises (checkboxes)
+  const analises = {};
+  if (tipo === "texto") {
+    document.querySelectorAll('input[name="analises"]:checked').forEach(input => {
+      analises[input.value] = true;
+    });
+  }
+
+  const payload = {
+    render: {
+      tipo,
+      formato: tipo === "grafico" ? formatoGrafico : (querPdf ? "pdf" : "tex"),
+      paleta: tipo === "grafico" ? paleta : null,
+    },
+    analises
+  };
+
+  formData.append("payload", JSON.stringify(payload));
+
+  // UI
+  setDisabled(analiseBtn, true);
+  showStatus("Processando...");
+  clearPdfUi();
+
+  try {
+    const response = await fetch(baseUrlAnalise, {
+      method: "POST",
+      body: formData
+    });
+
+    // backend novo: JSON sempre
+    const raw = await response.text();
+    if (!response.ok) {
+      throw new Error(raw || "Erro na requisição");
+    }
+
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      throw new Error("Resposta do backend não é JSON. Atualize o backend para retornar { tex, pdf_base64? }.");
+    }
+
+    // TEX → sempre no Resultado (textarea)
+    const resultadoEl = ensureTextAreaResultado();
+    resultadoEl.value = data?.tex ?? "";
+
+    // PDF → se veio, abre em outra aba (e opcionalmente mostra botão)
+    if (data?.pdf_base64) {
+      const bytes = Uint8Array.from(atob(data.pdf_base64), c => c.charCodeAt(0));
+      const blob = new Blob([bytes], { type: "application/pdf" });
+
+      revokePdfUrl();
+      __pdfObjectUrl = URL.createObjectURL(blob);
+
+      // abre direto em nova aba
+      openPdfInNewTab(__pdfObjectUrl);
+
+      // e também mostra botão caso pop-up bloqueie
+      const btn = ensureAbrirPdfButton();
+      btn.style.display = "inline-block";
+      btn.onclick = () => openPdfInNewTab(__pdfObjectUrl);
+    }
+
+    showStatus("");
+
+  } catch (err) {
+    showStatus("");
+    showError(err?.message ?? String(err));
+  } finally {
+    setDisabled(analiseBtn, false);
+  }
+});
