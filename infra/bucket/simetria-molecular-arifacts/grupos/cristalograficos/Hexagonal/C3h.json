@@ -1,0 +1,55 @@
+{
+  "nome": "C3h",
+  "descricao": "Grupo C3h: rotações C3 e um plano horizontal de reflexão (σh).",
+  "ordem": 6,
+  "operacoes": [
+    {
+      "id": 0,
+      "tipo": "identidade",
+      "comentario": "Identidade (E)",
+      "nome": "\\mathrm{E}"
+    },
+    {
+      "id": 1,
+      "tipo": "rotacao",
+      "eixo": [0,0,1],
+      "angulo": 120,
+      "comentario": "Rotação C3 (120°)",
+      "nome": "\\mathrm{C}_{3}"
+    },
+    {
+      "id": 2,
+      "tipo": "rotacao",
+      "eixo": [0,0,1],
+      "angulo": 240,
+      "comentario": "Rotação C3^2 (240°)",
+      "nome": "\\mathrm{C}_{3}^{2}"
+    },
+    {
+      "id": 3,
+      "tipo": "reflexao",
+      "plano_normal": [0,0,1],
+      "comentario": "Reflexão σh no plano xy",
+      "nome": "\\sigma_{h}"
+    },
+    {
+      "id": 4,
+      "tipo": "impropria",
+      "eixo": [0,0,1],
+      "angulo": 120,
+      "plano_normal": [0,0,1],
+      "comentario": "Rot. imprópria S3 (C3 + σh)",
+      "nome": "\\mathrm{S}_{3}"
+    },
+    {
+      "id": 5,
+      "tipo": "impropria",
+      "eixo": [0,0,1],
+      "angulo": 240,
+      "plano_normal": [0,0,1],
+      "comentario": "Rot. imprópria S3^2 (C3^2 + σh)",
+      "nome": "\\mathrm{S}_{3}^{2}"
+    }
+  ],
+  "tolerancia": 0.01
+}

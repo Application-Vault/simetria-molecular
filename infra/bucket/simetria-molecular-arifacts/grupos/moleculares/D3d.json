@@ -1,0 +1,99 @@
+{
+  "nome": "D3d",
+  "descricao": "Grupo diédrico com operações C₃, 3 C₂ perpendiculares e 3 planos σᵈ",
+  "ordem": 12,
+  "operacoes": [
+    {
+      "id": 1,
+      "tipo": "identidade",
+      "nome": "\\mathrm{E}",
+      "comentario": "Identidade"
+    },
+    {
+      "id": 2,
+      "tipo": "rotacao",
+      "eixo": [0,0,1],
+      "angulo": 120,
+      "nome": "\\mathrm{C}_{3}",
+      "comentario": "Rotação de 120° no eixo z"
+    },
+    {
+      "id": 3,
+      "tipo": "rotacao",
+      "eixo": [0,0,1],
+      "angulo": 240,
+      "nome": "\\mathrm{C}_{3}^{2}",
+      "comentario": "Rotação de 240° no eixo z"
+    },
+    {
+      "id": 4,
+      "tipo": "rotacao",
+      "eixo": [0.0,1.0,0.0],
+      "angulo": 180,
+      "comentario": "Rotação C₂(a) no plano xy (entre os Hs em y)",
+      "nome": "\\mathrm{C}_{2}^{(a)}"
+    },
+    {
+      "id": 5,
+      "tipo": "rotacao",
+      "eixo": [0.866025,-0.5,0.0],
+      "angulo": 180,
+      "comentario": "Rotação C₂(b) no plano xy (entre os Hs a 120°)",
+      "nome": "\\mathrm{C}_{2}^{(b)}"
+    },
+    {
+      "id": 6,
+      "tipo": "rotacao",
+      "eixo": [-0.866025,-0.5,0.0],
+      "angulo": 180,
+      "comentario": "Rotação C₂(c) no plano xy (entre os Hs a 240°)",
+      "nome": "\\mathrm{C}_{2}^{(c)}"
+    },
+    {
+      "id": 7,
+      "tipo": "reflexao",
+      "plano_normal": [0.866025,0.5,0],
+      "nome": "\\sigma_{d1}",
+      "comentario": "Plano diagonal σᵈ entre C₂(a) e C₂(b)"
+    },
+    {
+      "id": 8,
+      "tipo": "reflexao",
+      "plano_normal": [-0.866025,0.5,0],
+      "nome": "\\sigma_{d2}",
+      "comentario": "Plano diagonal σᵈ entre C₂(b) e C₂(c)"
+    },
+    {
+      "id": 9,
+      "tipo": "reflexao",
+      "plano_normal": [0,-1,0],
+      "nome": "\\sigma_{d3}",
+      "comentario": "Plano diagonal σᵈ entre C₂(c) e C₂(a)"
+    },
+    {
+      "id": 10,
+      "tipo": "impropria",
+      "eixo": [0,0,1],
+      "angulo": 60,
+      "plano_normal": [0,0,1],
+      "nome": "\\mathrm{S}_{6}",
+      "comentario": "Rotação imprópria S₆⁺ = C₆ + σₕ"
+    },
+    {
+      "id": 11,
+      "tipo": "impropria",
+      "eixo": [0,0,1],
+      "angulo": 300,
+      "plano_normal": [0,0,1],
+      "nome": "\\mathrm{S}_{6}^{5}",
+      "comentario": "Rotação imprópria S₆⁻ = C₆⁵ + σₕ"
+    },
+    {
+      "id": 12,
+      "tipo": "inversao",
+      "nome": "\\mathrm{i}",
+      "comentario": "Inversão central pelo ponto (0,0,0)"
+    }
+  ],
+  "tolerancia": 0.02
+}
