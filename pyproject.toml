@@ -1,7 +1,0 @@
-[tool.pyright]
-include = ["back-end"]
-pythonVersion = "3.10"
-typeCheckingMode = "basic"
-reportMissingImports = true
-reportMissingTypeStubs = false
-useLibraryCodeForTypes = true
