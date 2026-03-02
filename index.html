@@ -357,37 +357,6 @@
 
     /* ===== Theme toggle button (half moon / half sun) ===== */
     .theme-toggle {
-      width: 38px;
-      height: 38px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      background:
-        linear-gradient(135deg, rgba(255, 255, 255, .92) 0 50%, rgba(0, 0, 0, .70) 50% 100%);
-      box-shadow: 0 10px 22px rgba(0, 0, 0, .18);
-      cursor: pointer;
-      transition: transform .18s ease, filter .18s ease, background .18s ease;
-    }
-
-    .theme-toggle:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.05);
-    }
-
-    .theme-toggle:active {
-      transform: translateY(0px) scale(.98);
-    }
-
-    /* opcional: pequeno aro interno */
-    .theme-toggle::after {
-      content: "";
-      position: absolute;
-      inset: 6px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, .12);
-    }
-
-    /* ===== Theme toggle circular fix ===== */
-    .theme-toggle {
       width: 40px;
       height: 40px;
 
@@ -410,6 +379,24 @@
 
       cursor: pointer;
       transition: transform .18s ease, filter .18s ease;
+    }
+
+    .theme-toggle:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .theme-toggle:active {
+      transform: translateY(0px) scale(.98);
+    }
+
+    /* opcional: pequeno aro interno */
+    .theme-toggle::after {
+      content: "";
+      position: absolute;
+      inset: 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, .12);
     }
 
     /* remove qualquer influência de .btn */
