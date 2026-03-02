@@ -424,6 +424,31 @@
       background:
         linear-gradient(135deg, rgba(0, 0, 0, .75) 0 50%, rgba(255, 255, 255, .92) 50% 100%);
     }
+
+    body[data-theme="light"] {
+
+      /* força herança correta */
+      color: var(--text);
+    }
+
+    body[data-theme="light"] h1,
+    body[data-theme="light"] h2,
+    body[data-theme="light"] h3,
+    body[data-theme="light"] strong,
+    body[data-theme="light"] label,
+    body[data-theme="light"] .chip,
+    body[data-theme="light"] .hint,
+    body[data-theme="light"] .panel-header h2,
+    body[data-theme="light"] .section .section-title strong,
+    body[data-theme="light"] .viewer-placeholder,
+    body[data-theme="light"] .render-menu label {
+      color: var(--text) !important;
+    }
+
+    body[data-theme="light"] .hint,
+    body[data-theme="light"] small {
+      color: var(--muted) !important;
+    }
   </style>
 </head>
 
