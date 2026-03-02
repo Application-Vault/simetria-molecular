@@ -354,6 +354,76 @@
       width: 100%;
       min-height: 120px;
     }
+
+    /* ===== Theme toggle button (half moon / half sun) ===== */
+    .theme-toggle {
+      width: 38px;
+      height: 38px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, .92) 0 50%, rgba(0, 0, 0, .70) 50% 100%);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, .18);
+      cursor: pointer;
+      transition: transform .18s ease, filter .18s ease, background .18s ease;
+    }
+
+    .theme-toggle:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .theme-toggle:active {
+      transform: translateY(0px) scale(.98);
+    }
+
+    /* opcional: pequeno aro interno */
+    .theme-toggle::after {
+      content: "";
+      position: absolute;
+      inset: 6px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, .12);
+    }
+
+    .theme-toggle {
+      position: relative;
+    }
+
+    /* ===== Light theme overrides ===== */
+    body[data-theme="light"] {
+      --bg: #f6f7fb;
+      --panel: #ffffff;
+      --panel2: #f3f4f8;
+      --text: rgba(10, 12, 16, .88);
+      --muted: rgba(10, 12, 16, .55);
+      --border: rgba(10, 12, 16, .12);
+      --chip: rgba(10, 12, 16, .06);
+      --shadow: 0 10px 30px rgba(0, 0, 0, .10);
+    }
+
+    /* Ajusta backgrounds que usavam “dark vibes” */
+    body[data-theme="light"] {
+      background: radial-gradient(1200px 600px at 20% 0%, #ffffff 0%, var(--bg) 55%);
+    }
+
+    body[data-theme="light"] .topbar {
+      background: linear-gradient(180deg, rgba(255, 255, 255, .92), rgba(255, 255, 255, .70));
+    }
+
+    body[data-theme="light"] .col {
+      background: rgba(0, 0, 0, .02);
+    }
+
+    body[data-theme="light"] .section {
+      background: rgba(0, 0, 0, .04);
+    }
+
+    /* O toggle também inverte (fica “escuro/claro” mais coerente) */
+    body[data-theme="light"] .theme-toggle {
+      background:
+        linear-gradient(135deg, rgba(0, 0, 0, .75) 0 50%, rgba(255, 255, 255, .92) 50% 100%);
+    }
   </style>
 </head>
 
@@ -374,6 +444,9 @@
         onclick="window.open('https://naavilam.github.io/_posts/2025-06-16-Molecular-Symmetry.html','_blank')">
         🌐 Projeto
       </button>
+
+      <!-- NOVO: toggle sem texto -->
+      <button id="themeToggle" class="theme-toggle" type="button" aria-label="Alternar tema"></button>
     </div>
   </header>
 
@@ -556,6 +629,28 @@
   </form>
 
   <script src="js/app.js" defer></script>
+  <script>
+    (function () {
+      const key = "sm_theme";
+      const btn = document.getElementById("themeToggle");
+      if (!btn) return;
+
+      // aplica tema salvo (ou dark default)
+      const saved = localStorage.getItem(key);
+      if (saved === "light") document.body.setAttribute("data-theme", "light");
+
+      btn.addEventListener("click", () => {
+        const isLight = document.body.getAttribute("data-theme") === "light";
+        if (isLight) {
+          document.body.removeAttribute("data-theme");
+          localStorage.setItem(key, "dark");
+        } else {
+          document.body.setAttribute("data-theme", "light");
+          localStorage.setItem(key, "light");
+        }
+      });
+    })();
+  </script>
 </body>
 
 </html>
