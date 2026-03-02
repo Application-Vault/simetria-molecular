@@ -13,7 +13,7 @@
 
   <!-- Mantém seu CSS antigo -->
   <link rel="stylesheet" href="css/style.css">
-
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <!-- Layout base (mínimo) -->
   <style>
     :root {
@@ -359,49 +359,18 @@
     .theme-toggle {
       width: 40px;
       height: 40px;
-
-      padding: 0;
-      /* remove padding herdado */
-      display: inline-flex;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, .05);
+      display: flex;
       align-items: center;
       justify-content: center;
-      position: relative;
-      border-radius: 50%;
-      /* garante círculo perfeito */
-      border: 1px solid var(--border);
-
-      background:
-        linear-gradient(135deg,
-          rgba(255, 255, 255, .95) 0 50%,
-          rgba(0, 0, 0, .75) 50% 100%);
-
-      box-shadow: 0 6px 16px rgba(0, 0, 0, .18);
-
       cursor: pointer;
-      transition: transform .18s ease, filter .18s ease;
     }
 
-    .theme-toggle:hover {
-      transform: translateY(-1px);
-      filter: brightness(1.05);
-    }
-
-    .theme-toggle:active {
-      transform: translateY(0px) scale(.98);
-    }
-
-    /* opcional: pequeno aro interno */
-    .theme-toggle::after {
-      content: "";
-      position: absolute;
-      inset: 6px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, .12);
-    }
-
-    /* remove qualquer influência de .btn */
-    .theme-toggle.btn {
-      all: unset;
+    .theme-toggle i {
+      font-size: 16px;
+      color: var(--text);
     }
 
     /* ===== Light theme overrides ===== */
@@ -485,7 +454,9 @@
       </button>
 
       <!-- NOVO: toggle sem texto -->
-      <button id="themeToggle" class="theme-toggle" type="button" aria-label="Alternar tema"></button>
+      <button id="themeToggle" class="theme-toggle" type="button">
+        <i class="fa-solid fa-moon"></i>
+      </button>
     </div>
   </header>
 
@@ -689,6 +660,17 @@
         }
       });
     })();
+  </script>
+  <script>
+    const icon = btn.querySelector("i");
+
+    if (isLight) {
+      icon.classList.remove("fa-sun");
+      icon.classList.add("fa-moon");
+    } else {
+      icon.classList.remove("fa-moon");
+      icon.classList.add("fa-sun");
+    }
   </script>
 </body>
 
