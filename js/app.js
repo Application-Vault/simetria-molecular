@@ -157,6 +157,7 @@ function ensureAbrirPdfButton() {
   btn.id = "abrirPdf";
   btn.textContent = "Abrir PDF em outra aba";
   btn.type = "button";
+  btn.className = "btn";
   btn.style.display = "none";
 
   // NOVO: ancora no slot do HTML
