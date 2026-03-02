@@ -364,11 +364,6 @@
         onclick="window.open('https://naavilam.github.io/_posts/2025-06-16-Molecular-Symmetry.html','_blank')">
         🌐 Projeto
       </button>
-
-      <!-- mantém seu botão real -->
-      <button id="botaoAnalise" class="btn primary" type="button">
-        Analisar Simetria
-      </button>
     </div>
   </header>
 
@@ -517,6 +512,10 @@
           </div>
         </div>
         <div class="actions-row">
+          <!-- mantém seu botão real -->
+          <button id="botaoAnalise" class="btn primary" type="button">
+            Analisar Simetria
+          </button>
           <!-- O botão principal está na navbar (id=botaoAnalise), então aqui deixo só “atalhos” -->
           <button class="btn" type="button"
             onclick="navigator.clipboard?.writeText(document.getElementById('resultado').value || '')">
