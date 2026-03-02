@@ -326,6 +326,24 @@
       font-weight: 700;
       font-size: 12px;
     }
+
+    .section.light {
+      background: #f3f3f6;
+      color: #1c1c1f;
+    }
+
+    .section.light h3 {
+      color: #222;
+    }
+
+    .section.light label {
+      color: #333;
+    }
+
+    .section.light input[type="radio"],
+    .section.light input[type="checkbox"] {
+      accent-color: #2b7cff;
+    }
   </style>
 </head>
 
@@ -475,7 +493,7 @@
 
           <div id="renderOpcoes" class="render-opcoes" style="margin-top:12px;">
             <!-- Texto -->
-            <div id="render-texto">
+            <div id="render-texto" class="section light">
               <h3>Análises Desejadas</h3>
               <label><input type="checkbox" name="analises" value="grupo" checked> Identificação do Grupo</label><br>
               <label><input type="checkbox" name="analises" value="permutacoes" checked> Permutações</label><br>
@@ -497,7 +515,7 @@
             </div>
 
             <!-- Gráfico -->
-            <div id="render-grafico" style="display:none;">
+            <div id="render-grafico" class="section light" style="display:none;">
               <h3>Formato Gráfico</h3>
               <label><input type="radio" name="formatoGrafico" value="3d" checked> 3D Interativo</label><br>
               <label><input type="radio" name="formatoGrafico" value="gif" disabled> GIF (Em breve)</label><br>
