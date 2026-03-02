@@ -386,8 +386,35 @@
       border: 1px solid rgba(255, 255, 255, .12);
     }
 
+    /* ===== Theme toggle circular fix ===== */
     .theme-toggle {
+      width: 40px;
+      height: 40px;
+
+      padding: 0;
+      /* remove padding herdado */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       position: relative;
+      border-radius: 50%;
+      /* garante círculo perfeito */
+      border: 1px solid var(--border);
+
+      background:
+        linear-gradient(135deg,
+          rgba(255, 255, 255, .95) 0 50%,
+          rgba(0, 0, 0, .75) 50% 100%);
+
+      box-shadow: 0 6px 16px rgba(0, 0, 0, .18);
+
+      cursor: pointer;
+      transition: transform .18s ease, filter .18s ease;
+    }
+
+    /* remove qualquer influência de .btn */
+    .theme-toggle.btn {
+      all: unset;
     }
 
     /* ===== Light theme overrides ===== */
