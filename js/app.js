@@ -158,15 +158,16 @@ function ensureAbrirPdfButton() {
   btn.textContent = "Abrir PDF em outra aba";
   btn.type = "button";
   btn.style.display = "none";
-  btn.style.marginTop = "12px";
-  btn.style.padding = "10px 14px";
-  btn.style.borderRadius = "10px";
-  btn.style.border = "1px solid #ccc";
-  btn.style.background = "white";
-  btn.style.cursor = "pointer";
 
-  const after = ensureTextAreaResultado();
-  after.insertAdjacentElement("afterend", btn);
+  // NOVO: ancora no slot do HTML
+  const slot = $("pdfSlot");
+  if (slot) {
+    slot.appendChild(btn);
+  } else {
+    // fallback antigo
+    const after = ensureTextAreaResultado();
+    after.insertAdjacentElement("afterend", btn);
+  }
   return btn;
 }
 
