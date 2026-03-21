@@ -14,6 +14,15 @@ class Matrix3DRepresentation(Representation):
         inst = cls(grupo.nome)
         for op in grupo.operacoes:
             matriz = cls._matriz_da_operacao(op)
+            print(f"[DEBUG MATRIX] nome={op['nome']}")
+            print(f"[DEBUG MATRIX] tipo={op['tipo']}")
+            if 'eixo' in op:
+                print(f"[DEBUG MATRIX] eixo={op['eixo']}")
+            if 'angulo' in op:
+                print(f"[DEBUG MATRIX] angulo={op['angulo']}")
+            if 'plano_normal' in op:
+                print(f"[DEBUG MATRIX] plano_normal={op['plano_normal']}")
+            print(f"[DEBUG MATRIX] matriz=\n{matriz}")
             inst.adicionar(op["nome"], matriz)
         return inst
 
