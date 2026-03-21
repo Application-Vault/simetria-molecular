@@ -602,6 +602,7 @@
         }
 
         syncThemeIcon();
+        atualizarTemaViewer();
       });
     })();
   </script>
@@ -623,6 +624,7 @@
           try {
             await navigator.clipboard.writeText(tex);
             btnCopiarTex.innerHTML = '<i class="fa-solid fa-check"></i> Copiado';
+
             setTimeout(() => {
               btnCopiarTex.innerHTML = '<i class="fa-regular fa-copy"></i> Copiar';
             }, 1400);
@@ -642,9 +644,8 @@
             return;
           }
 
-          alert("Aqui você poderá chamar seu Lambda de geração de PDF.");
+          alert("Aqui você poderá chamar seu Lambda especializado em PDF.");
 
-          // Exemplo futuro:
           /*
           try {
             btnGerarPdf.disabled = true;
@@ -655,9 +656,7 @@
               headers: {
                 "Content-Type": "application/json"
               },
-              body: JSON.stringify({
-                tex
-              })
+              body: JSON.stringify({ tex })
             });
   
             if (!response.ok) {
@@ -665,10 +664,10 @@
             }
   
             const data = await response.json();
-            console.log("Resposta do Lambda PDF:", data);
   
-            // exemplo:
-            // if (data.pdf_url) window.open(data.pdf_url, "_blank");
+            if (data.pdf_url) {
+              window.open(data.pdf_url, "_blank", "noopener,noreferrer");
+            }
   
           } catch (err) {
             console.error(err);
