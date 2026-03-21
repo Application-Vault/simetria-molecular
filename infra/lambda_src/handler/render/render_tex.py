@@ -194,23 +194,32 @@ Página \thepage\ de \pageref{{LastPage}}}}
 
     def _formatar_operacoes_conjugacao(self, operacoes: dict) -> str:
         linhas = []
+
         for g, conjugacoes in operacoes.items():
-            ge = self._latex_escape_text(str(g))
-            linhas.append(rf"\subsection*{{Conjugações de \texttt{{{ge}}}}}")
+            g_tex = self._latex_math_op(g)
+
+            linhas.append(rf"\subsection*{{Conjugações de ${g_tex}$}}")
+            linhas.append(r"\begin{longtable}{r l l l}")
 
             for h, info in conjugacoes.items():
-                he = self._latex_escape_text(str(h))
+                h_tex = self._latex_math_op(h)
                 detalhe = info.get("detalhe", {}) or {}
 
                 hgh_inv = detalhe.get("hgh⁻¹") or detalhe.get("hgh-1") or detalhe.get("hgh^-1") or ""
+                resultado = str(info.get("resultado", ""))
 
-                hgh_e = self._latex_escape_text(str(hgh_inv))
-                res_e = self._latex_escape_text(str(info.get("resultado", "")))
+                hgh_tex = self._latex_math_op(hgh_inv) if hgh_inv else r"\text{---}"
+                resultado_tex = self._latex_math_op(resultado) if resultado else r"\text{---}"
 
                 linhas.append(
-                    rf"\texttt{{{he}}} $\circ$ \texttt{{{ge}}} $\circ$ \texttt{{{he}}}^{{-1}} "
-                    rf"$=$ \texttt{{{hgh_e}}} $=$ \texttt{{{res_e}}} \\"
+                    rf"\makebox[3.5cm][r]{{$ {h_tex} \circ {g_tex} \circ {h_tex}^{{-1}} $}}"
+                    rf" & $= {hgh_tex}$"
+                    rf" & $= {resultado_tex}$"
+                    rf" & \\"
                 )
+
+            linhas.append(r"\end{longtable}")
+
         return "\n".join(linhas)
 
     def _formatar_tabela_conjugacao(self, operacoes: dict) -> str:
@@ -219,21 +228,51 @@ Página \thepage\ de \pageref{{LastPage}}}}
 
         linhas.append(r"\begin{array}{c|" + ("c" * len(nomes)) + r"}")
         linhas.append(
-            " & " + " & ".join(rf"\text{{{self._latex_escape_text(str(n))}}}" for n in nomes) + r" \\ \hline"
+            " & " + " & ".join(self._latex_math_op(n) for n in nomes) + r" \\ \hline"
         )
 
         for g, resultados in operacoes.items():
-            row = [rf"\text{{{self._latex_escape_text(str(g))}}}"]
+            row = [self._latex_math_op(g)]
             for h in nomes:
                 val = (resultados.get(h) or {}).get("resultado", "")
-                row.append(rf"\text{{{self._latex_escape_text(str(val))}}}")
+                row.append(self._latex_math_op(val) if val else r"\text{---}")
             linhas.append(" & ".join(row) + r" \\")
+
         linhas.append(r"\end{array}")
         return "\n".join(linhas)
 
     # -------------------------
     # HELPERS
     # -------------------------
+
+    def _extrair_classes_de_operacoes(self, operacoes_conjugacao: dict) -> dict:
+        """
+        Agrupa operações em classes de conjugação.
+        A chave da classe é escolhida como o primeiro elemento encontrado
+        da classe, preservando a ordem do dicionário de entrada.
+        """
+        classes = {}
+        visitados = set()
+
+        for g, conjugacoes in operacoes_conjugacao.items():
+            if g in visitados:
+                continue
+
+            classe = set([g])
+
+            for _, info in conjugacoes.items():
+                resultado = (info or {}).get("resultado")
+                if resultado:
+                    classe.add(str(resultado))
+
+            classe_ordenada = [op for op in operacoes_conjugacao.keys() if op in classe]
+
+            for op in classe_ordenada:
+                visitados.add(op)
+
+            classes[g] = classe_ordenada
+
+        return classes
 
     @staticmethod
     def latex_safe(op: str) -> str:
