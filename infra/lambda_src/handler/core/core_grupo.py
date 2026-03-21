@@ -68,23 +68,35 @@ class Group:
         """Carrega grupo de simetria a partir de arquivo JSON, inferindo o sistema pelo caminho."""
         import os
 
+        print(f"[DEBUG GROUP LOAD] path_json={path_json}")
+
         with open(path_json, "r", encoding="utf-8") as f:
             dados = json.load(f)
+
+        print(f"[DEBUG GROUP LOAD] nome={dados.get('nome')}")
+        print(f"[DEBUG GROUP LOAD] ordem={dados.get('ordem')}")
+        print(f"[DEBUG GROUP LOAD] tolerancia={dados.get('tolerancia')}")
+
+        for op in dados.get("operacoes", []):
+            if op.get("nome") == "\\mathrm{C}_{2}^{(a)}":
+                print(f"[DEBUG GROUP LOAD] C2a eixo={op.get('eixo')}")
+            if op.get("nome") == "\\mathrm{C}_{2}^{(b)}":
+                print(f"[DEBUG GROUP LOAD] C2b eixo={op.get('eixo')}")
+            if op.get("nome") == "\\mathrm{C}_{2}^{(c)}":
+                print(f"[DEBUG GROUP LOAD] C2c eixo={op.get('eixo')}")
 
         nome = dados.get("nome")
         ordem = dados.get("ordem")
         operacoes = dados.get("operacoes")
         tolerancia = dados.get("tolerancia")
 
-        # Tentar inferir sistema a partir do caminho
         caminho = os.path.normpath(path_json)
         partes = caminho.split(os.sep)
 
-        sistema = "Molecular"  # valor padrão se não for identificado
+        sistema = "Molecular"
         if "grupos" in partes:
             try:
                 idx_grupo = partes.index("grupos")
-                # sistema_parts = partes[idx_grupo + 1:-1]  # subpastas após 'grupo' e antes do arquivo
                 sistema_parts = partes[idx_grupo + 1:]
                 if sistema_parts and sistema_parts[-1].endswith(".json"):
                     sistema_parts = sistema_parts[:-1]
@@ -100,7 +112,9 @@ class Group:
                     sistema = " ".join(sistema_corrigido)
 
             except Exception:
-                pass  # mantemos sistema = "Molecular"
+                pass
+
+        print(f"[DEBUG GROUP LOAD] sistema={sistema}")
 
         return cls(sistema, nome, ordem, operacoes, tolerancia)
 
