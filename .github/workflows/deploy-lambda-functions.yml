@@ -4,7 +4,7 @@ on:
   push:
     branches: ["backend"]
     paths:
-      - "infra/lambda_src/**"
+      - "infra/lambda/**"
       - ".github/workflows/deploy-lambda-functions.yml"
 
 env:
@@ -25,7 +25,7 @@ jobs:
         with:
           filters: |
             simetria:
-              - 'infra/lambda_src/handler/**'
+              - 'infra/lambda/handler/**'
 
   deploy-simetria:
     needs: changes
@@ -55,7 +55,7 @@ jobs:
           mkdir -p dist .lambda_build
 
           # 1) Copia SOMENTE o handler (ele já contém tudo)
-          rsync -a infra/lambda_src/handler/ .lambda_build/
+          rsync -a infra/lambda/handler/ .lambda_build/
 
           # 2) Baixa tectonic via GitHub API (prefer MUSL) e coloca no ZIP (bin/tectonic)
           mkdir -p .lambda_build/bin /tmp/tectonic_extract
