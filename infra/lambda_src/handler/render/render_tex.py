@@ -135,6 +135,18 @@ Página \thepage\ de \pageref{{LastPage}}}}
     # -------------------------
     # FORMATADORES
     # -------------------------
+    def _formatar_classes_conjugacao(self, classes: dict) -> str:
+        linhas = []
+
+        for classe, ops in classes.items():
+            classe_tex = self._latex_math_op(classe)
+            ops_tex = ", ".join(self._latex_math_op(op) for op in ops)
+
+            linhas.append(
+                rf"{classe_tex} &= \left\{{ {ops_tex} \right\}}"
+            )
+
+        return r" \\ ".join(linhas)
 
     def _formatar_permutacoes(self, permutacoes: dict) -> str:
         linhas = [r"\begin{array}{r@{\,:\ }l}"]
