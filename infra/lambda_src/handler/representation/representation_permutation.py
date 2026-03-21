@@ -116,7 +116,7 @@ class PermutationRepresentation(Representation):
         inst = cls(rep3d.nome_grupo)
         for nome, matriz in rep3d:
             print(f"[DEBUG] tentando operação {nome}")
-            perm = cls._calcular_permutacao(molecule, matriz)
+            perm = cls._calcular_permutacao(molecule, matriz, nome_operacao=nome)
             print(f"[DEBUG] operação {nome} -> perm {perm}")
             inst.adicionar(nome, perm)
         return inst
