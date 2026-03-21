@@ -38,6 +38,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  padding: 5px 18px 5px 22px;
   background: linear-gradient(180deg, rgba(10, 15, 22, .92), rgba(10, 15, 22, .70));
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
