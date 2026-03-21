@@ -1,0 +1,84 @@
+/* ===== Theme toggle button ===== */
+.theme-toggle {
+  width: 46px;
+  height: 46px;
+  min-width: 46px;
+  min-height: 46px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, .05);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex: 0 0 46px;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  transition: .2s ease;
+}
+
+.theme-toggle:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, .08);
+}
+
+.theme-toggle i {
+  font-size: 20px;
+  line-height: 1;
+  color: var(--text);
+  pointer-events: none;
+}
+
+/* ===== Light theme overrides ===== */
+body[data-theme="light"] {
+  --bg: #f6f7fb;
+  --panel: #ffffff;
+  --panel2: #f3f4f8;
+  --text: rgba(10, 12, 16, .88);
+  --muted: rgba(10, 12, 16, .55);
+  --border: rgba(10, 12, 16, .12);
+  --chip: rgba(10, 12, 16, .06);
+  --shadow: 0 10px 30px rgba(0, 0, 0, .10);
+  background: radial-gradient(1200px 600px at 20% 0%, #ffffff 0%, var(--bg) 55%);
+  color: var(--text);
+}
+
+body[data-theme="light"] .topbar {
+  background: linear-gradient(180deg, rgba(255, 255, 255, .92), rgba(255, 255, 255, .70));
+}
+
+body[data-theme="light"] .col {
+  background: rgba(0, 0, 0, .02);
+}
+
+body[data-theme="light"] .section {
+  background: rgba(0, 0, 0, .04);
+}
+
+body[data-theme="light"] .theme-toggle {
+  background: rgba(0, 0, 0, .06);
+}
+
+body[data-theme="light"] .theme-toggle:hover {
+  background: rgba(0, 0, 0, .10);
+}
+
+body[data-theme="light"] h1,
+body[data-theme="light"] h2,
+body[data-theme="light"] h3,
+body[data-theme="light"] strong,
+body[data-theme="light"] label,
+body[data-theme="light"] .chip,
+body[data-theme="light"] .hint,
+body[data-theme="light"] .panel-header h2,
+body[data-theme="light"] .section .section-title strong,
+body[data-theme="light"] .viewer-placeholder,
+body[data-theme="light"] .render-menu label {
+  color: var(--text) !important;
+}
+
+body[data-theme="light"] .hint,
+body[data-theme="light"] small {
+  color: var(--muted) !important;
+}
