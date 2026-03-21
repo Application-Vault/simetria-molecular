@@ -26,9 +26,9 @@ class LatexReportGenerator:
 \section{Operações de Multiplicação}
 \subsection{Tabela de Multiplicação}
 \begin{adjustbox}{max width=\linewidth, angle=90, center}
-\[
+$
 %s
-\]
+$
 \end{adjustbox}
 """
                 % self._formatar_tabela_multiplicacao(self.resultado["operacoes_multiplicacao"])
@@ -52,9 +52,9 @@ class LatexReportGenerator:
 \section{Operações de Conjugação}
 \subsection{Tabela de Conjugação}
 \begin{adjustbox}{max width=\linewidth, angle=90, center}
-\[
+$
 %s
-\]
+$
 \end{adjustbox}
 """
                 % self._formatar_tabela_conjugacao(self.resultado["operacoes_conjugacao"])
@@ -244,20 +244,9 @@ Página \thepage\ de \pageref{{LastPage}}}}
         )
 
     def _latex_math_op(self, op: str) -> str:
-        """
-        Recebe um nome de operação que já vem em pseudo-LaTeX/LaTeX
-        e devolve pronto para uso em modo matemático.
-        """
         return self.latex_safe(str(op))
 
     def _latex_perm_to_math_text(self, s: str) -> str:
-        """
-        Converte uma lista/permutação para algo seguro dentro de modo matemático.
-        Exemplo:
-            [1, 2, 3]
-        vira:
-            \text{[1, 2, 3]}
-        """
         return rf"\text{{{self._latex_escape_text(str(s))}}}"
 
     def _latex_escape_text(self, s: str) -> str:
