@@ -163,7 +163,7 @@ Página \thepage\ de \pageref{{LastPage}}}}
     def _formatar_permutacoes(self, permutacoes: dict) -> str:
         linhas = [r"\begin{array}{r@{\,:\ }l}"]
         for nome, lista in permutacoes.items():
-            nome_tex = rf"\text{{{self._latex_escape_text(str(nome))}}}"
+            nome_tex = self.latex_safe(str(nome))
             lista_tex = rf"\text{{{self._latex_escape_text(str(lista))}}}"
             linhas.append(rf"{nome_tex} & {lista_tex} \\")
         linhas.append(r"\end{array}")
