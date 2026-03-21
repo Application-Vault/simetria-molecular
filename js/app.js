@@ -50,7 +50,7 @@ function showStatus(msg) {
 }
 
 function ensureTextAreaResultado() {
-  // ✅ você quer TEX em resultado. Então #resultado precisa ser textarea
+  // você quer TEX em resultado. Então #resultado precisa ser textarea
   // se não existir, cria (fallback).
   let el = $("resultado");
   if (el) return el;
@@ -71,6 +71,14 @@ function clearPdfUi() {
   revokePdfUrl();
 }
 
+function clearResultadoUi() {
+  const resultadoEl = $("resultado");
+  if (resultadoEl) {
+    resultadoEl.value = "";
+  }
+
+  clearPdfUi();
+}
 /******************************/
 /* SELECT MOLECULA            */
 /******************************/
@@ -216,6 +224,7 @@ analiseBtn?.addEventListener("click", async () => {
   setDisabled(analiseBtn, true);
   showStatus("Processando...");
   clearPdfUi();
+  clearResultadoUi();
 
   try {
     const response = await fetch(baseUrlAnalise, {
