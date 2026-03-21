@@ -544,11 +544,6 @@
           <button id="botaoAnalise" class="btn primary" type="button">
             Analisar Simetria
           </button>
-          <!-- O botão principal está na navbar (id=botaoAnalise), então aqui deixo só “atalhos” -->
-          <button class="btn" type="button"
-            onclick="navigator.clipboard?.writeText(document.getElementById('resultado').value || '')">
-            📋 Copiar Resultado
-          </button>
         </div>
         <div id="pdfSlot"></div>
         <!-- 
@@ -615,6 +610,83 @@
 
         syncThemeIcon();
       });
+    })();
+  </script>
+  <script>
+    (function () {
+      const btnCopiarTex = document.getElementById("btnCopiarTex");
+      const btnGerarPdf = document.getElementById("btnGerarPdf");
+      const resultadoEl = document.getElementById("resultado");
+
+      if (btnCopiarTex) {
+        btnCopiarTex.addEventListener("click", async () => {
+          const tex = resultadoEl?.value || "";
+
+          if (!tex.trim()) {
+            alert("Ainda não há conteúdo TeX para copiar.");
+            return;
+          }
+
+          try {
+            await navigator.clipboard.writeText(tex);
+            btnCopiarTex.innerHTML = '<i class="fa-solid fa-check"></i> Copiado';
+            setTimeout(() => {
+              btnCopiarTex.innerHTML = '<i class="fa-regular fa-copy"></i> Copiar';
+            }, 1400);
+          } catch (err) {
+            alert("Não foi possível copiar o conteúdo.");
+            console.error(err);
+          }
+        });
+      }
+
+      if (btnGerarPdf) {
+        btnGerarPdf.addEventListener("click", async () => {
+          const tex = resultadoEl?.value || "";
+
+          if (!tex.trim()) {
+            alert("Ainda não há conteúdo TeX para enviar.");
+            return;
+          }
+
+          alert("Aqui você poderá chamar seu Lambda de geração de PDF.");
+
+          // Exemplo futuro:
+          /*
+          try {
+            btnGerarPdf.disabled = true;
+            btnGerarPdf.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando...';
+  
+            const response = await fetch("SUA_URL_DO_LAMBDA_PDF", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                tex
+              })
+            });
+  
+            if (!response.ok) {
+              throw new Error("Falha ao gerar PDF.");
+            }
+  
+            const data = await response.json();
+            console.log("Resposta do Lambda PDF:", data);
+  
+            // exemplo:
+            // if (data.pdf_url) window.open(data.pdf_url, "_blank");
+  
+          } catch (err) {
+            console.error(err);
+            alert("Erro ao gerar PDF.");
+          } finally {
+            btnGerarPdf.disabled = false;
+            btnGerarPdf.innerHTML = '<i class="fa-regular fa-file-pdf"></i> Gerar PDF';
+          }
+          */
+        });
+      }
     })();
   </script>
 </body>
