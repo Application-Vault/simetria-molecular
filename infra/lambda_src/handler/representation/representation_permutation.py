@@ -62,7 +62,7 @@ class PermutationRepresentation(Representation):
         return assignment if ok else None
 
     @staticmethod
-    def _calcular_permutacao(molecule, matriz, tolerancia=1e-2):
+    def _calcular_permutacao(molecule, matriz, nome_operacao="", tolerancia=1e-2):
         coords_orig = np.array(molecule.coordenadas, dtype=float)
 
         # centraliza antes de aplicar a operação
@@ -92,7 +92,8 @@ class PermutationRepresentation(Representation):
                 mins = dist_sub.min(axis=1)
                 detalhe = ", ".join(f"{d:.6f}" for d in mins)
                 raise ValueError(
-                    f"Não foi possível mapear os átomos do elemento {elem} dentro da tolerância {tolerancia}. "
+                    f"Operação {nome_operacao}: não foi possível mapear os átomos do elemento {elem} "
+                    f"dentro da tolerância {tolerancia}. "
                     f"Menores distâncias por átomo transformado: [{detalhe}]"
                 )
 
@@ -112,13 +113,11 @@ class PermutationRepresentation(Representation):
 
     @classmethod
     def from_matrix3d(cls, rep3d: Matrix3DRepresentation, molecule: Molecule):
+        inst = cls(rep3d.nome_grupo)
         for nome, matriz in rep3d:
             print(f"[DEBUG] tentando operação {nome}")
             perm = cls._calcular_permutacao(molecule, matriz)
-            inst.adicionar(nome, perm)
-        inst = cls(rep3d.nome_grupo)
-        for nome, matriz in rep3d:
-            perm = cls._calcular_permutacao(molecule, matriz)
+            print(f"[DEBUG] operação {nome} -> perm {perm}")
             inst.adicionar(nome, perm)
         return inst
 
