@@ -1,21 +1,3 @@
-"""=================================================================================================================================================
-**                                                   Copyright © 2025 Chanah Yocheved Bat Sarah                                                   **
-**                                                                                                                                                **
-**                                                       Author: Chanah Yocheved Bat Sarah                                                        **
-**                                                          Contact: contact@chanah.dev                                                           **
-**                                                                Date: 2025-05-26                                                                **
-**                                                      License: Custom Attribution License                                                       **
-**                                                                                                                                                **
-**                                                                      ---                                                                       **
-**                                                                                                                                                **
-**   Permission is granted to use, copy, modify, and distribute this file, provided that this notice is retained in full and that the origin of   **
-**    the software is clearly and explicitly attributed to the original author. Such attribution must be preserved not only within the source     **
-**       code, but also in any accompanying documentation, public display, distribution, or derived work, in both digital or printed form.        **
-**                                                  For licensing inquiries: contact@chanah.dev                                                   **
-====================================================================================================================================================
-"""
-
-# latex_generator.py
 import re
 
 
@@ -55,7 +37,7 @@ class LatexReportGenerator:
             blocos.append(
                 r"""
 \subsection{Operações de Multiplicação Detalhadas}
-\begin{longtable}{>{$}r<{$} >{$}l<{$} >{$}l<{$}}
+\begin{longtable}{r l l l}
 %s
 \end{longtable}
 """
@@ -86,8 +68,6 @@ class LatexReportGenerator:
                 % self._formatar_operacoes_conjugacao(self.resultado["operacoes_conjugacao"])
             )
 
-            # Aqui eu deixo como TEXTO (não $...$), porque os nomes podem ter "_" etc.
-            # Se quiser matemático, dá pra trocar por \ensuremath{...} com escape cuidadoso.
             blocos.append(
                 r"""
 \subsection{Agrupamento em Classes de Conjugação}
@@ -102,7 +82,6 @@ class LatexReportGenerator:
                 )
             )
 
-        # metadados em texto (podem ter underscore etc.)
         sistema = self._latex_escape_text(str(self.metadata.get("sistema", "")))
         molecula = self._latex_escape_text(str(self.metadata.get("molecula", "")))
         grupo = self._latex_escape_text(str(self.metadata.get("grupo", "")))
@@ -118,6 +97,7 @@ class LatexReportGenerator:
 \usepackage{{fancyhdr}}
 \usepackage{{geometry}}
 \usepackage{{amsmath}}
+\usepackage{{array}}
 \usepackage{{longtable}}
 \usepackage{{lastpage}}
 \usepackage[hidelinks]{{hyperref}}
@@ -128,11 +108,9 @@ class LatexReportGenerator:
 \pagestyle{{fancy}}
 \fancyhf{{}}
 
-% fancyhdr estava avisando headheight; já deixo o recomendado:
 \setlength{{\headheight}}{{42pt}}
 \setlength{{\headsep}}{{2em}}
 
-% Cabeçalho (texto)
 \fancyhead[L]{{\textbf{{Análise de Simetria}} \\
 \textbf{{Sistema {sistema}}} \\
 Tempo de Execução: \textbf{{{tempo_exec}}}}}
@@ -163,7 +141,7 @@ Página \thepage\ de \pageref{{LastPage}}}}
     def _formatar_permutacoes(self, permutacoes: dict) -> str:
         linhas = [r"\begin{array}{r@{\,:\ }l}"]
         for nome, lista in permutacoes.items():
-            nome_tex = self.latex_safe(str(nome))
+            nome_tex = self._latex_math_op(nome)
             lista_tex = rf"\text{{{self._latex_escape_text(str(lista))}}}"
             linhas.append(rf"{nome_tex} & {lista_tex} \\")
         linhas.append(r"\end{array}")
@@ -175,14 +153,14 @@ Página \thepage\ de \pageref{{LastPage}}}}
 
         linhas.append(r"\begin{array}{c|" + ("c" * len(chaves)) + r"}")
 
-        header = " & " + " & ".join(rf"\text{{{self._latex_escape_text(str(op))}}}" for op in chaves) + r" \\ \hline"
+        header = " & " + " & ".join(self._latex_math_op(op) for op in chaves) + r" \\ \hline"
         linhas.append(header)
 
         for op1, linha in tabela.items():
             valores = [linha[op2]["nome"] for op2 in chaves]
 
-            op1_tex = rf"\text{{{self._latex_escape_text(str(op1))}}}"
-            valores_tex = " & ".join(rf"\text{{{self._latex_escape_text(str(v))}}}" for v in valores)
+            op1_tex = self._latex_math_op(op1)
+            valores_tex = " & ".join(self._latex_math_op(v) for v in valores)
 
             linhas.append(op1_tex + " & " + valores_tex + r" \\")
 
@@ -191,26 +169,27 @@ Página \thepage\ de \pageref{{LastPage}}}}
 
     def _formatar_operacoes_multiplicacao(self, operacoes: dict) -> str:
         linhas = []
+
         for op1, linha in operacoes.items():
             for op2, info in linha.items():
                 perm2 = str(info.get("permutacao_op2", ""))
                 perm_result = str(info.get("permutacao_resultante", ""))
                 resultado = str(info.get("nome", ""))
 
-                op1e = self._latex_escape_text(str(op1))
-                op2e = self._latex_escape_text(str(op2))
+                op1_tex = self._latex_math_op(op1)
+                op2_tex = self._latex_math_op(op2)
+                resultado_tex = self._latex_math_op(resultado)
 
-                # permutações/resultados podem conter caracteres especiais, então escapamos como texto
-                perm2e = self._latex_escape_text(perm2)
-                permrese = self._latex_escape_text(perm_result)
-                rese = self._latex_escape_text(resultado)
+                perm2_tex = self._latex_perm_to_math_text(perm2)
+                perm_result_tex = self._latex_perm_to_math_text(perm_result)
 
                 linhas.append(
-                    rf"\makebox[3.3cm][r]{{$\mathrm{{{op1e}}} \circ \mathrm{{{op2e}}}$}} &="
-                    rf" \text{{{op1e}}} \circ \text{{{perm2e}}} &="
-                    rf" \text{{{permrese}}} &="
-                    rf" \makebox[2.3cm][l]{{\text{{{rese}}}}} \\"
+                    rf"\makebox[3.3cm][r]{{$ {op1_tex} \circ {op2_tex} $}}"
+                    rf" & $= {op1_tex} \circ {perm2_tex}$"
+                    rf" & $= {perm_result_tex}$"
+                    rf" & \makebox[2.3cm][l]{{$= {resultado_tex}$}} \\"
                 )
+
         return "\n".join(linhas)
 
     def _formatar_operacoes_conjugacao(self, operacoes: dict) -> str:
@@ -223,13 +202,11 @@ Página \thepage\ de \pageref{{LastPage}}}}
                 he = self._latex_escape_text(str(h))
                 detalhe = info.get("detalhe", {}) or {}
 
-                # cuidado com a chave hgh⁻¹ (tem caractere unicode)
                 hgh_inv = detalhe.get("hgh⁻¹") or detalhe.get("hgh-1") or detalhe.get("hgh^-1") or ""
 
                 hgh_e = self._latex_escape_text(str(hgh_inv))
                 res_e = self._latex_escape_text(str(info.get("resultado", "")))
 
-                # Tudo como texto para não quebrar com underscores etc.
                 linhas.append(
                     rf"\texttt{{{he}}} $\circ$ \texttt{{{ge}}} $\circ$ \texttt{{{he}}}^{{-1}} "
                     rf"$=$ \texttt{{{hgh_e}}} $=$ \texttt{{{res_e}}} \\"
@@ -260,17 +237,30 @@ Página \thepage\ de \pageref{{LastPage}}}}
 
     @staticmethod
     def latex_safe(op: str) -> str:
-        """
-        Corrige superscript/subscript duplos como \mathrm{C}_{2}^{(a)} para evitar erro de compilação LaTeX.
-        """
         return re.sub(
             r"(\\mathrm\{[A-Za-z]+\})_\{([^\}]+)\}\^\{([^\}]+)\}",
             r"\1_{\2}^{\3}",
             op,
         )
 
+    def _latex_math_op(self, op: str) -> str:
+        """
+        Recebe um nome de operação que já vem em pseudo-LaTeX/LaTeX
+        e devolve pronto para uso em modo matemático.
+        """
+        return self.latex_safe(str(op))
+
+    def _latex_perm_to_math_text(self, s: str) -> str:
+        """
+        Converte uma lista/permutação para algo seguro dentro de modo matemático.
+        Exemplo:
+            [1, 2, 3]
+        vira:
+            \text{[1, 2, 3]}
+        """
+        return rf"\text{{{self._latex_escape_text(str(s))}}}"
+
     def _latex_escape_text(self, s: str) -> str:
-        # escape bem conservador pra TEX (modo texto via \text{} / \texttt{})
         return (
             str(s)
             .replace("\\", r"\textbackslash{}")
