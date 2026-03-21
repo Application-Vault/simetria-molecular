@@ -71,13 +71,16 @@ $
             blocos.append(
                 r"""
 \subsection{Agrupamento em Classes de Conjugação}
-\begin{itemize}
+\[
+\begin{array}{rcl}
 %s
-\end{itemize}
+\end{array}
+\]
 """
-                % "\n".join(
-                    rf"\item ${self._latex_math_op(classe)}$: "
-                    + ", ".join(rf"${self._latex_math_op(op)}$" for op in ops)
+                % r" \\ ".join(
+                    rf"{self._latex_math_op(classe)} & = & \{{ "
+                    + ", ".join(self._latex_math_op(op) for op in ops)
+                    + r" \}}"
                     for classe, ops in classes.items()
                 )
             )
