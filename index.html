@@ -14,6 +14,8 @@
   <!-- Mantém seu CSS antigo -->
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="js/render-3D.js">
+  <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
   <!-- Layout base (mínimo) -->
   <style>
     :root {
@@ -443,16 +445,7 @@
           </div>
 
           <!-- Placeholder por enquanto (não interfere no JS) -->
-          <div class="viewer-placeholder">
-            <div>
-              <div style="font-weight:800; font-size:14px; margin-bottom:6px;">
-                ⬡ Viewer 3D (em breve)
-              </div>
-              <div style="font-size:12px; color:rgba(255,255,255,.60)">
-                NGL / 3Dmol / JSmol
-              </div>
-            </div>
-          </div>
+          <div id="viewer3d" class="viewer3d"></div>
         </div>
 
         <div class="section" style="min-height:auto;">

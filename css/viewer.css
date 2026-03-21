@@ -1,0 +1,51 @@
+.viewer3d {
+  width: 100%;
+  height: 360px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, .12);
+  background:
+    radial-gradient(600px 260px at 30% 20%, rgba(106, 169, 255, .08), transparent 60%),
+    radial-gradient(520px 240px at 70% 60%, rgba(255, 111, 174, .08), transparent 60%),
+    rgba(0, 0, 0, .12);
+}
+
+.result-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.result-title-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.result-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.result-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.result-btn i {
+  font-size: 14px;
+}
+
+body[data-theme="light"] .viewer3d {
+  border: 1px solid rgba(0, 0, 0, .10);
+  background:
+    radial-gradient(600px 260px at 30% 20%, rgba(106, 169, 255, .10), transparent 60%),
+    radial-gradient(520px 240px at 70% 60%, rgba(255, 111, 174, .10), transparent 60%),
+    rgba(255, 255, 255, .75);
+}

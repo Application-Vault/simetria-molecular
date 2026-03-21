@@ -1,5 +1,6 @@
 @import url("./theme-toggle.css");
 @import url("./resultados.css");
+@import url("./viewer.css");
 
 #botaoAnaliseFinal:hover {
   background: linear-gradient(135deg, #fce4ec, #f8bbd0);

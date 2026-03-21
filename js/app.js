@@ -90,7 +90,9 @@ const moleculaSelect = $("moleculaSelect");
 const moleculaOutput = $("moleculaOutput");
 
 moleculaSelect?.addEventListener("change", async () => {
-  clearResultadoUi()
+  clearResultadoUi();
+  clearPdfUi();
+
   const moleculaSelecionada = moleculaSelect.value;
 
   if (!moleculaOutput) return;
@@ -98,12 +100,14 @@ moleculaSelect?.addEventListener("change", async () => {
   if (moleculaSelecionada === "outro") {
     moleculaOutput.readOnly = false;
     moleculaOutput.value = "";
+    clearViewer3D();
     return;
   }
 
   if (!moleculaSelecionada) {
     moleculaOutput.value = "";
     moleculaOutput.readOnly = true;
+    clearViewer3D();
     return;
   }
 
@@ -111,12 +115,16 @@ moleculaSelect?.addEventListener("change", async () => {
     showStatus("Carregando molécula...");
     const resp = await fetch(baseUrlMoleculas + moleculaSelecionada);
     if (!resp.ok) throw new Error("Erro ao carregar o XYZ");
+
     const xyz = await resp.text();
     moleculaOutput.value = xyz;
     moleculaOutput.readOnly = true;
+
+    atualizarViewerDaMolecula();
     showStatus("");
   } catch (e) {
     moleculaOutput.value = String(e?.message ?? e);
+    clearViewer3D();
     showStatus("");
   }
 });
