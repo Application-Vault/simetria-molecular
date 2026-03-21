@@ -66,17 +66,7 @@ class PermutationRepresentation(Representation):
         coords_orig = np.array(molecule.coordenadas, dtype=float)
 
         # centraliza antes de aplicar a operação
-        massas = {
-            "H": 1.0,
-            "C": 12.0,
-            "O": 16.0,
-            "N": 14.0,
-            "S": 32.0,
-            "F": 19.0,
-        }
-
-        pesos = np.array([massas.get(e, 1.0) for e in molecule.elementos])
-        centro = np.average(coords_orig, axis=0, weights=pesos)
+        centro = coords_orig.mean(axis=0)
         coords_centradas = coords_orig - centro
         coords_transf = (matriz @ coords_centradas.T).T + centro
 
@@ -122,6 +112,10 @@ class PermutationRepresentation(Representation):
 
     @classmethod
     def from_matrix3d(cls, rep3d: Matrix3DRepresentation, molecule: Molecule):
+        for nome, matriz in rep3d:
+            print(f"[DEBUG] tentando operação {nome}")
+            perm = cls._calcular_permutacao(molecule, matriz)
+            inst.adicionar(nome, perm)
         inst = cls(rep3d.nome_grupo)
         for nome, matriz in rep3d:
             perm = cls._calcular_permutacao(molecule, matriz)
