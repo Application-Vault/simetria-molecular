@@ -456,10 +456,25 @@
         </div>
 
         <div class="section" style="min-height:auto;">
-          <div class="section-title">
-            <strong>Resultado (.tex)</strong>
-            <span class="hint">saída do backend / análise selecionada</span>
+          <div class="section-title result-header">
+            <div class="result-title-wrap">
+              <strong>Resultado (.tex)</strong>
+              <span class="hint">saída do backend / análise selecionada</span>
+            </div>
+
+            <div class="result-actions">
+              <button id="btnCopiarTex" class="btn result-btn" type="button">
+                <i class="fa-regular fa-copy"></i>
+                Copiar
+              </button>
+
+              <button id="btnGerarPdf" class="btn result-btn primary" type="button">
+                <i class="fa-regular fa-file-pdf"></i>
+                Gerar PDF
+              </button>
+            </div>
           </div>
+
           <textarea id="resultado" class="result" readonly></textarea>
         </div>
       </div>
