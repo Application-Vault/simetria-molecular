@@ -1,9 +1,9 @@
 .result-header {
   display: flex;
-  align-items: center;        /* <-- chave */
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
-  flex-wrap: nowrap;          /* <-- impede quebrar linha */
+  flex-wrap: nowrap;
 }
 
 .result-title-wrap {
@@ -16,7 +16,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-shrink: 0;             /* <-- impede os botões de "descerem" */
+  flex-shrink: 0;
 }
 
 .result-btn {
