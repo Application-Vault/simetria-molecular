@@ -65,7 +65,6 @@ function ensureTextAreaResultado() {
 }
 
 function clearPdfUi() {
-  // se você tiver um botão/link/placeholder, limpa aqui.
   const pdfBtn = $("abrirPdf");
   if (pdfBtn) pdfBtn.style.display = "none";
   revokePdfUrl();
@@ -76,9 +75,13 @@ function clearResultadoUi() {
   if (resultadoEl) {
     resultadoEl.value = "";
   }
+}
 
+function clearUi() {
+  clearResultadoUi()
   clearPdfUi();
 }
+
 /******************************/
 /* SELECT MOLECULA            */
 /******************************/
@@ -87,6 +90,7 @@ const moleculaSelect = $("moleculaSelect");
 const moleculaOutput = $("moleculaOutput");
 
 moleculaSelect?.addEventListener("change", async () => {
+  clearResultadoUi()
   const moleculaSelecionada = moleculaSelect.value;
 
   if (!moleculaOutput) return;
@@ -137,7 +141,7 @@ function trocarRender() {
   }
 
   // quando troca, limpa PDF anterior e mantém TEX
-  clearPdfUi();
+  clearUi()
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -223,8 +227,7 @@ analiseBtn?.addEventListener("click", async () => {
   // UI
   setDisabled(analiseBtn, true);
   showStatus("Processando...");
-  clearPdfUi();
-  clearResultadoUi();
+  clearUi()
 
   try {
     const response = await fetch(baseUrlAnalise, {
