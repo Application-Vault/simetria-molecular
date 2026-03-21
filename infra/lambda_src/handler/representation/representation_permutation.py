@@ -66,7 +66,17 @@ class PermutationRepresentation(Representation):
         coords_orig = np.array(molecule.coordenadas, dtype=float)
 
         # centraliza antes de aplicar a operação
-        centro = coords_orig.mean(axis=0)
+        massas = {
+            "H": 1.0,
+            "C": 12.0,
+            "O": 16.0,
+            "N": 14.0,
+            "S": 32.0,
+            "F": 19.0,
+        }
+
+        pesos = np.array([massas.get(e, 1.0) for e in molecule.elementos])
+        centro = np.average(coords_orig, axis=0, weights=pesos)
         coords_centradas = coords_orig - centro
         coords_transf = (matriz @ coords_centradas.T).T + centro
 
