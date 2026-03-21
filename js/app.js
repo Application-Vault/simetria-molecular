@@ -129,6 +129,10 @@ moleculaSelect?.addEventListener("change", async () => {
   }
 });
 
+moleculaOutput?.addEventListener("input", () => {
+  atualizarViewerDaMolecula();
+});
+
 /******************************/
 /* TROCA ENTRE TEXTO/GRÁFICO  */
 /******************************/
