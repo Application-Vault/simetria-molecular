@@ -14,7 +14,6 @@
   <!-- Mantém seu CSS antigo -->
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link rel="stylesheet" href="js/render.js">
   <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
   <!-- Layout base (mínimo) -->
   <style>
@@ -561,128 +560,7 @@
     <input type="file" id="input-molecula" name="molecula" hidden>
     <input type="file" id="input-grupo" name="grupo" hidden>
   </form>
-
-  <script src="js/app.js" defer></script>
-  <script>
-    (function () {
-      const key = "sm_theme";
-      const btn = document.getElementById("themeToggle");
-      if (!btn) return;
-
-      const icon = btn.querySelector("i");
-
-      function syncThemeIcon() {
-        const isLight = document.body.getAttribute("data-theme") === "light";
-
-        if (isLight) {
-          icon.classList.remove("fa-moon");
-          icon.classList.add("fa-sun");
-        } else {
-          icon.classList.remove("fa-sun");
-          icon.classList.add("fa-moon");
-        }
-      }
-
-      const saved = localStorage.getItem(key);
-      if (saved === "light") {
-        document.body.setAttribute("data-theme", "light");
-      }
-
-      syncThemeIcon();
-
-      btn.addEventListener("click", () => {
-        const isLight = document.body.getAttribute("data-theme") === "light";
-
-        if (isLight) {
-          document.body.removeAttribute("data-theme");
-          localStorage.setItem(key, "dark");
-        } else {
-          document.body.setAttribute("data-theme", "light");
-          localStorage.setItem(key, "light");
-        }
-
-        syncThemeIcon();
-        atualizarTemaViewer();
-      });
-    })();
-  </script>
-  <script>
-    (function () {
-      const btnCopiarTex = document.getElementById("btnCopiarTex");
-      const btnGerarPdf = document.getElementById("btnGerarPdf");
-      const resultadoEl = document.getElementById("resultado");
-
-      if (btnCopiarTex) {
-        btnCopiarTex.addEventListener("click", async () => {
-          const tex = resultadoEl?.value || "";
-
-          if (!tex.trim()) {
-            alert("Ainda não há conteúdo TeX para copiar.");
-            return;
-          }
-
-          try {
-            await navigator.clipboard.writeText(tex);
-            btnCopiarTex.innerHTML = '<i class="fa-solid fa-check"></i> Copiado';
-            setTimeout(() => {
-              btnCopiarTex.innerHTML = '<i class="fa-regular fa-copy"></i> Copiar';
-            }, 1400);
-          } catch (err) {
-            alert("Não foi possível copiar o conteúdo.");
-            console.error(err);
-          }
-        });
-      }
-
-      if (btnGerarPdf) {
-        btnGerarPdf.addEventListener("click", async () => {
-          const tex = resultadoEl?.value || "";
-
-          if (!tex.trim()) {
-            alert("Ainda não há conteúdo TeX para enviar.");
-            return;
-          }
-
-          alert("Aqui você poderá chamar seu Lambda de geração de PDF.");
-
-          // Exemplo futuro:
-          /*
-          try {
-            btnGerarPdf.disabled = true;
-            btnGerarPdf.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando...';
-  
-            const response = await fetch("SUA_URL_DO_LAMBDA_PDF", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                tex
-              })
-            });
-  
-            if (!response.ok) {
-              throw new Error("Falha ao gerar PDF.");
-            }
-  
-            const data = await response.json();
-            console.log("Resposta do Lambda PDF:", data);
-  
-            // exemplo:
-            // if (data.pdf_url) window.open(data.pdf_url, "_blank");
-  
-          } catch (err) {
-            console.error(err);
-            alert("Erro ao gerar PDF.");
-          } finally {
-            btnGerarPdf.disabled = false;
-            btnGerarPdf.innerHTML = '<i class="fa-regular fa-file-pdf"></i> Gerar PDF';
-          }
-          */
-        });
-      }
-    })();
-  </script>
+  <script type="module" src="js/app.js"></script>
 </body>
 
 </html>
