@@ -200,25 +200,24 @@ Página \thepage\ de \pageref{{LastPage}}}}
 
         for g, conjugacoes in operacoes.items():
             g_tex = self._latex_math_op(g)
-
             linhas.append(rf"\subsection*{{Conjugações de ${g_tex}$}}")
-            linhas.append(r"\begin{longtable}{r l l l}")
-
+            linhas.append(r"\begin{longtable}{r l l}")
+            
             for h, info in conjugacoes.items():
                 h_tex = self._latex_math_op(h)
-                detalhe = info.get("detalhe", {}) or {}
+                h_inv_tex = self._latex_inverse_op(h)
 
+                detalhe = info.get("detalhe", {}) or {}
                 hgh_inv = detalhe.get("hgh⁻¹") or detalhe.get("hgh-1") or detalhe.get("hgh^-1") or ""
                 resultado = str(info.get("resultado", ""))
 
-                hgh_tex = self._latex_math_op(hgh_inv) if hgh_inv else r"\text{---}"
-                resultado_tex = self._latex_math_op(resultado) if resultado else r"\text{---}"
+                hgh_tex = self._latex_math_op(hgh_inv) if hgh_inv else self._latex_math_op(resultado)
+                res_tex = self._latex_math_op(resultado)
 
                 linhas.append(
-                    rf"\makebox[3.5cm][r]{{$ {h_tex} \circ {g_tex} \circ {h_tex}^{{-1}} $}}"
+                    rf"\makebox[3.5cm][r]{{$ {h_tex} \circ {g_tex} \circ {h_inv_tex} $}}"
                     rf" & $= {hgh_tex}$"
-                    rf" & $= {resultado_tex}$"
-                    rf" & \\"
+                    rf" & $= {res_tex}$ \\"
                 )
 
             linhas.append(r"\end{longtable}")
@@ -284,6 +283,9 @@ Página \thepage\ de \pageref{{LastPage}}}}
             r"\1_{\2}^{\3}",
             op,
         )
+
+    def _latex_inverse_op(self, op: str) -> str:
+        return rf"\left({self._latex_math_op(op)}\right)^{{-1}}"
 
     def _latex_math_op(self, op: str) -> str:
         return self.latex_safe(str(op))
