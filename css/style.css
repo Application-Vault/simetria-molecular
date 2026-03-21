@@ -1,4 +1,4 @@
-@import url(".theme-toggle.css");
+@import url("./theme-toggle.css");
 
 #botaoAnaliseFinal:hover {
   background: linear-gradient(135deg, #fce4ec, #f8bbd0);
