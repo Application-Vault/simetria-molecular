@@ -104,6 +104,10 @@ class PermutationRepresentation(Representation):
         if any(p == -1 for p in permutacao):
             raise ValueError("Permutação incompleta: alguns átomos não foram mapeados.")
 
+        print(f"[DEBUG] elemento={elem}")
+        print(f"[DEBUG] idx_transf={idx_transf}")
+        print(f"[DEBUG] idx_orig={idx_orig}")
+        print(f"[DEBUG] dist_sub=\n{dist_sub}")
         return permutacao
 
     @classmethod
