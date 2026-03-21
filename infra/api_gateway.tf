@@ -1,6 +1,3 @@
-# -----------------------------
-# API Gateway HTTP API (v2)
-# -----------------------------
 resource "aws_apigatewayv2_api" "simetria-molecular" {
   name          = "${local.fullname}-api"
   protocol_type = "HTTP"
@@ -21,24 +18,9 @@ resource "aws_apigatewayv2_integration" "handler" {
   payload_format_version = "2.0"
 }
 
-# Rota curinga para preservar contrato inteiro sem mapear rota por rota
-resource "aws_apigatewayv2_route" "proxy" {
-  api_id    = aws_apigatewayv2_api.simetria-molecular.id
-  route_key = "ANY /{proxy+}"
-  target    = "integrations/${aws_apigatewayv2_integration.handler.id}"
-}
-
 resource "aws_apigatewayv2_stage" "prod" {
   api_id      = aws_apigatewayv2_api.simetria-molecular.id
   name        = "$default"
   auto_deploy = true
 }
 
-# Permite API Gateway invocar a Lambda
-resource "aws_lambda_permission" "apigw" {
-  statement_id  = "AllowApiGatewayInvoke"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.handler.function_name
-  principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.simetria-molecular.execution_arn}/*/*"
-}
