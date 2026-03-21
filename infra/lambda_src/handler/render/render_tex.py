@@ -76,8 +76,8 @@ $
 \end{itemize}
 """
                 % "\n".join(
-                    rf"\item \textbf{{{self._latex_escape_text(classe)}}}: "
-                    + ", ".join(rf"\texttt{{{self._latex_escape_text(op)}}}" for op in ops)
+                    rf"\item ${self._latex_math_op(classe)}$: "
+                    + ", ".join(rf"${self._latex_math_op(op)}$" for op in ops)
                     for classe, ops in classes.items()
                 )
             )
