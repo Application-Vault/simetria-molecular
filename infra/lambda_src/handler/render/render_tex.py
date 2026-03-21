@@ -72,17 +72,12 @@ $
                 r"""
 \subsection{Agrupamento em Classes de Conjugação}
 \[
-\begin{array}{rcl}
+\begin{aligned}
 %s
-\end{array}
+\end{aligned}
 \]
 """
-                % r" \\ ".join(
-                    rf"{self._latex_math_op(classe)} & = & \{{ "
-                    + ", ".join(self._latex_math_op(op) for op in ops)
-                    + r" \}}"
-                    for classe, ops in classes.items()
-                )
+                % self._formatar_classes_conjugacao(classes)
             )
 
         sistema = self._latex_escape_text(str(self.metadata.get("sistema", "")))
