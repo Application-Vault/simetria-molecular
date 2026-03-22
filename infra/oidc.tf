@@ -22,7 +22,8 @@ data "aws_iam_policy_document" "github_lambda_writer_policy" {
       "lambda:GetFunctionConfiguration"
     ]
     resources = [
-      aws_lambda_function.handler.arn
+      aws_lambda_function.handler.arn,
+      aws_lambda_function.pdf_handler.arn
     ]
   }
 }

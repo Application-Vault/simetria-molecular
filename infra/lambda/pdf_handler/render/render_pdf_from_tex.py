@@ -2,7 +2,6 @@ import os
 import subprocess
 from pathlib import Path
 
-
 class PdfFromTexGenerator:
     def __init__(self, tex_str: str, tectonic_path: str = None):
         self.tex_str = tex_str
