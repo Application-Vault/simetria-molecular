@@ -15,8 +15,6 @@ export function trocarRender() {
     divTexto.style.display = 'none';
     divGrafico.style.display = 'block';
   }
-
-  clearUi();
 }
 
 export function initRenderMode() {
