@@ -20,6 +20,7 @@ import json
 import re
 from pathlib import Path
 from representation.representation import Representation
+
 class ClasseConjugacao:
     def __init__(self, representation: Representation):
         self.rep = representation
@@ -27,19 +28,13 @@ class ClasseConjugacao:
     def gerar(self):
         """
         Retorna uma tupla:
-        - classes: dict com 'Classe 1': [nomes]
+        - classes: dict com representante -> lista de nomes da classe
         - conjugacao_detalhada: dict com g -> h -> {resultado, detalhe}
         """
         nomes = self.rep.nomes()
         usados = set()
-        conjugacy = []
         conjugacao_detalhada = {}
-
-        # Índice reverso: permutação -> lista de nomes (pode haver mais de um nome com mesma permutação)
-        perm_to_nomes = {}
-        for nome in nomes:
-            chave = tuple(self.rep[nome])
-            perm_to_nomes.setdefault(chave, []).append(nome)
+        classes_formatadas = {}
 
         for g in nomes:
             if g in usados:
@@ -51,6 +46,8 @@ class ClasseConjugacao:
             for h in nomes:
                 perm_g = self.rep[g]
                 perm_h = self.rep[h]
+
+                # h g h^{-1}
                 conj = self.rep.conjugar(perm_g, perm_h)
 
                 nome_resultado = self._nome_da_permutacao(self.rep, conj, nomes, g)
@@ -65,78 +62,23 @@ class ClasseConjugacao:
                     }
                 }
 
-            conjugacy.append(sorted(classe, key=nomes.index))
+            classe_ordenada = sorted(classe, key=nomes.index)
+            classes_formatadas[g] = classe_ordenada
             usados.update(classe)
 
-        # Formatando como 'Classe 1': [...]
-        classes_formatadas = {
-            f"Classe {i+1}": classe for i, classe in enumerate(conjugacy)
-        }
-        # print(classes_formatadas)
-        return conjugacao_detalhada
+        return classes_formatadas, conjugacao_detalhada
 
     @staticmethod
     def _nome_da_permutacao(rep, perm_resultado, nomes, g):
-        # Etapa 0: Priorizar o próprio g
         if rep[g] == perm_resultado:
             return g
 
-        # Etapa 1: buscar nomes que não são "E"
         for nome_k in nomes:
             if nome_k != "E" and rep[nome_k] == perm_resultado:
                 return nome_k
 
-        # Etapa 2: se não encontrou, aceitar "E"
         for nome_k in nomes:
             if rep[nome_k] == perm_resultado:
                 return nome_k
 
-        # Falha de segurança
         return "??"
-
-    # def gerar(self) -> tuple[dict, dict]:
-    #     """
-    #     Retorna uma tupla:
-    #     - classes: dict com 'Classe 1': [nomes]
-    #     - conjugacao_detalhada: dict com g -> h -> {resultado, detalhe}
-    #     """
-    #     nomes = self.rep.nomes()
-    #     usados = set()
-    #     conjugacy = []
-    #     conjugacao_detalhada = {}
-
-    #     for g in nomes:
-    #         if g in usados:
-    #             continue
-
-    #         classe = set()
-    #         conjugacao_detalhada[g] = {}
-
-    #         for h in nomes:
-    #             perm_g = self.rep[g]
-    #             perm_h = self.rep[h]
-    #             conj = self.rep.conjugar(perm_g, perm_h)
-
-    #             # Encontrar qual nome corresponde ao resultado da conjugação
-    #             for nome_k in nomes:
-    #                 if self.rep[nome_k] == conj:
-    #                     classe.add(nome_k)
-    #                     conjugacao_detalhada[g][h] = {
-    #                         "resultado": nome_k,
-    #                         "detalhe": {
-    #                             "g": perm_g,
-    #                             "h": perm_h,
-    #                             "hgh⁻¹": conj
-    #                         }
-    #                     }
-    #                     break
-
-    #         conjugacy.append(sorted(classe, key=nomes.index))
-    #         usados.update(classe)
-
-    #     # Formatando em forma de "Classe 1", "Classe 2", etc.
-    #     classes_formatadas = {
-    #         f"Classe {i+1}": classe for i, classe in enumerate(conjugacy)
-    #     }
-
-    #     return conjugacao_detalhada
