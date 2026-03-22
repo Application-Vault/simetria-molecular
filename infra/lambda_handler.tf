@@ -1,6 +1,6 @@
 data "archive_file" "handler_zip" {
   type        = "zip"
-  source_dir  = "${path.module}/lambda_src/handler"
+  source_dir  = "${path.module}/lambda/handler"
   output_path = "${path.module}/build/${local.fullname}.zip"
 }
 

@@ -4,12 +4,12 @@ on:
   push:
     branches: ["backend"]
     paths:
-      - "infra/lambda/**"
+      - "infra/lambda/handler/**"
+      - "infra/lambda/pdf_handler/**"
       - ".github/workflows/deploy-lambda-functions.yml"
 
 env:
   AWS_REGION: us-east-2
-  LAMBDA_NAME: simetria-molecular-prod
   TECTONIC_VERSION: "0.15.0"
 
 jobs:
@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       simetria: ${{ steps.filter.outputs.simetria }}
+      pdf: ${{ steps.filter.outputs.pdf }}
     steps:
       - uses: actions/checkout@v4
 
@@ -26,6 +27,8 @@ jobs:
           filters: |
             simetria:
               - 'infra/lambda/handler/**'
+            pdf:
+              - 'infra/lambda/pdf_handler/**'
 
   deploy-simetria:
     needs: changes
@@ -34,6 +37,10 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    env:
+      LAMBDA_NAME: simetria-molecular-prod
+      SOURCE_DIR: infra/lambda/handler
+      ZIP_NAME: simetria.zip
 
     steps:
       - uses: actions/checkout@v4
@@ -46,72 +53,16 @@ jobs:
         with:
           role-to-assume: ${{ vars.AWS_LAMBDA_ROLE_TO_ASSUME }}
           aws-region: ${{ env.AWS_REGION }}
-          role-session-name: gha-lambda-deploy
+          role-session-name: gha-lambda-deploy-simetria
 
-      - name: Package lambda (handler + deps + tectonic MUSL, Lambda-compatible)
+      - name: Package lambda principal
         run: |
           set -euo pipefail
-          rm -rf dist .lambda_build /tmp/tectonic_extract /tmp/tectonic_release.json /tmp/tectonic.tar.gz
+          rm -rf dist .lambda_build
           mkdir -p dist .lambda_build
 
-          # 1) Copia SOMENTE o handler (ele já contém tudo)
-          rsync -a infra/lambda/handler/ .lambda_build/
+          rsync -a "${SOURCE_DIR}/" .lambda_build/
 
-          # 2) Baixa tectonic via GitHub API (prefer MUSL) e coloca no ZIP (bin/tectonic)
-          mkdir -p .lambda_build/bin /tmp/tectonic_extract
-
-          # garante jq
-          if ! command -v jq >/dev/null 2>&1; then
-            sudo apt-get update -y
-            sudo apt-get install -y jq
-          fi
-
-          TAG="tectonic@${TECTONIC_VERSION}"
-          API_URL="https://api.github.com/repos/tectonic-typesetting/tectonic/releases/tags/${TAG}"
-          echo "Fetching release info: $API_URL"
-          curl -fsSL "$API_URL" -o /tmp/tectonic_release.json
-
-          # MUSL primeiro (ideal pro Lambda zip), fallback pra GNU
-          TECTONIC_URL="$(jq -r '
-            def pick($re):
-              (.assets[]? | select(.name | test($re)) | .browser_download_url) // empty;
-
-            pick("tectonic-.*x86_64-unknown-linux-musl\\.tar\\.gz$") as $musl
-            | if ($musl != "") then $musl
-              else pick("tectonic-.*x86_64-unknown-linux-gnu\\.tar\\.gz$")
-              end
-          ' /tmp/tectonic_release.json | head -n 1)"
-
-          if [ -z "${TECTONIC_URL}" ] || [ "${TECTONIC_URL}" = "null" ]; then
-            echo "[ERROR] Não achei asset MUSL/GNU do tectonic no release ${TAG}."
-            echo "Assets disponíveis:"
-            jq -r '.assets[].name' /tmp/tectonic_release.json || true
-            exit 2
-          fi
-
-          echo "Downloading tectonic from: $TECTONIC_URL"
-          curl -fL "$TECTONIC_URL" -o /tmp/tectonic.tar.gz
-
-          echo "Downloaded file type:"
-          file /tmp/tectonic.tar.gz || true
-
-          tar -xzf /tmp/tectonic.tar.gz -C /tmp/tectonic_extract
-
-          # acha o binário tectonic dentro do tarball (sem assumir caminho)
-          TECTONIC_BIN="$(find /tmp/tectonic_extract -type f -name tectonic 2>/dev/null | head -n 1 || true)"
-          if [ -z "${TECTONIC_BIN}" ]; then
-            echo "[ERROR] tectonic binary not found inside tarball."
-            echo "List extract dir:"
-            find /tmp/tectonic_extract -maxdepth 4 -type f | head -n 200
-            exit 3
-          fi
-
-          cp "$TECTONIC_BIN" .lambda_build/bin/tectonic
-          chmod +x .lambda_build/bin/tectonic
-          echo "tectonic installed at .lambda_build/bin/tectonic"
-          .lambda_build/bin/tectonic --version || true
-
-          # 3) Instala deps dentro de /var/task usando a imagem oficial do runtime
           docker run --rm \
             --entrypoint /bin/bash \
             -v "$PWD/.lambda_build:/var/task" \
@@ -124,14 +75,108 @@ jobs:
               fi
             '
 
-          # 4) Zip com handler.py na RAIZ
-          (cd .lambda_build && zip -r ../dist/simetria.zip .)
+          (cd .lambda_build && zip -r "../dist/${ZIP_NAME}" .)
+          ls -lh "dist/${ZIP_NAME}"
 
-          # 5) Info útil
-          ls -lh dist/simetria.zip
-
-      - name: Deploy lambda
+      - name: Deploy lambda principal
         run: |
           aws lambda update-function-code \
-            --function-name "${{ env.LAMBDA_NAME }}" \
-            --zip-file fileb://dist/simetria.zip
+            --function-name "${LAMBDA_NAME}" \
+            --zip-file "fileb://dist/${ZIP_NAME}"
+
+  deploy-pdf:
+    needs: changes
+    if: needs.changes.outputs.pdf == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      LAMBDA_NAME: simetria-molecular-pdf-prod
+      SOURCE_DIR: infra/lambda/pdf_handler
+      ZIP_NAME: simetria-pdf.zip
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_LAMBDA_ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: gha-lambda-deploy-pdf
+
+      - name: Package lambda PDF
+        run: |
+          set -euo pipefail
+          rm -rf dist .lambda_build /tmp/tectonic_extract /tmp/tectonic_release.json /tmp/tectonic.tar.gz
+          mkdir -p dist .lambda_build
+
+          rsync -a "${SOURCE_DIR}/" .lambda_build/
+
+          mkdir -p .lambda_build/bin /tmp/tectonic_extract
+
+          if ! command -v jq >/dev/null 2>&1; then
+            sudo apt-get update -y
+            sudo apt-get install -y jq
+          fi
+
+          TAG="tectonic@${TECTONIC_VERSION}"
+          API_URL="https://api.github.com/repos/tectonic-typesetting/tectonic/releases/tags/${TAG}"
+          echo "Fetching release info: $API_URL"
+          curl -fsSL "$API_URL" -o /tmp/tectonic_release.json
+
+          TECTONIC_URL="$(jq -r '
+            def pick($re):
+              (.assets[]? | select(.name | test($re)) | .browser_download_url) // empty;
+
+            pick("tectonic-.*x86_64-unknown-linux-musl\\.tar\\.gz$") as $musl
+            | if ($musl != "") then $musl
+              else pick("tectonic-.*x86_64-unknown-linux-gnu\\.tar\\.gz$")
+              end
+          ' /tmp/tectonic_release.json | head -n 1)"
+
+          if [ -z "${TECTONIC_URL}" ] || [ "${TECTONIC_URL}" = "null" ]; then
+            echo "[ERROR] Não achei asset MUSL/GNU do tectonic no release ${TAG}."
+            jq -r '.assets[].name' /tmp/tectonic_release.json || true
+            exit 2
+          fi
+
+          echo "Downloading tectonic from: $TECTONIC_URL"
+          curl -fL "$TECTONIC_URL" -o /tmp/tectonic.tar.gz
+          tar -xzf /tmp/tectonic.tar.gz -C /tmp/tectonic_extract
+
+          TECTONIC_BIN="$(find /tmp/tectonic_extract -type f -name tectonic 2>/dev/null | head -n 1 || true)"
+          if [ -z "${TECTONIC_BIN}" ]; then
+            echo "[ERROR] tectonic binary not found inside tarball."
+            find /tmp/tectonic_extract -maxdepth 4 -type f | head -n 200
+            exit 3
+          fi
+
+          cp "$TECTONIC_BIN" .lambda_build/bin/tectonic
+          chmod +x .lambda_build/bin/tectonic
+          .lambda_build/bin/tectonic --version || true
+
+          docker run --rm \
+            --entrypoint /bin/bash \
+            -v "$PWD/.lambda_build:/var/task" \
+            public.ecr.aws/lambda/python:3.11 \
+            -lc '
+              set -euo pipefail
+              python -m pip install --upgrade pip
+              if [ -f /var/task/requirements.txt ]; then
+                pip install -r /var/task/requirements.txt -t /var/task
+              fi
+            '
+
+          (cd .lambda_build && zip -r "../dist/${ZIP_NAME}" .)
+          ls -lh "dist/${ZIP_NAME}"
+
+      - name: Deploy lambda PDF
+        run: |
+          aws lambda update-function-code \
+            --function-name "${LAMBDA_NAME}" \
+            --zip-file "fileb://dist/${ZIP_NAME}"
