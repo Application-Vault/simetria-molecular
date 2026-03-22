@@ -36,6 +36,8 @@ export function initResultActions() {
         return;
       }
 
+      const newTab = window.open("", "_blank");
+
       try {
         btnGerarPdf.disabled = true;
         btnGerarPdf.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando...';
@@ -53,22 +55,20 @@ export function initResultActions() {
           throw new Error(msg || "Falha ao gerar PDF.");
         }
 
-        const data = await response.json();
-
-        if (!data.pdf_base64) {
-          throw new Error("Resposta sem pdf_base64.");
-        }
-
-        const bytes = Uint8Array.from(atob(data.pdf_base64), c => c.charCodeAt(0));
-        const blob = new Blob([bytes], { type: "application/pdf" });
+        const blob = await response.blob();
         const pdfUrl = URL.createObjectURL(blob);
 
-        window.open(pdfUrl, "_blank", "noopener,noreferrer");
+        if (newTab) {
+          newTab.location = pdfUrl;
+        } else {
+          window.open(pdfUrl, "_blank", "noopener,noreferrer");
+        }
 
         setTimeout(() => URL.revokeObjectURL(pdfUrl), 60000);
 
       } catch (err) {
         console.error(err);
+        if (newTab) newTab.close();
         alert("Erro ao gerar PDF.");
       } finally {
         btnGerarPdf.disabled = false;
