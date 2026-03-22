@@ -166,7 +166,7 @@ class Group:
             eixo = np.array(operacao["eixo"], float)
             angulo = operacao["angulo"]
             eixo /= np.linalg.norm(eixo)
-            rot = R.from_rotvec(np.deg2rad(angulo) * eixo).as_matrix()
+            rot = rotvec_to_matrix(np.deg2rad(angulo) * eixo)
 
             normal = np.array(operacao["plano_normal"], float)
             normal /= np.linalg.norm(normal)
@@ -174,12 +174,12 @@ class Group:
 
             destaque = [
                 {
-                    "tipo":   "eixo",
+                    "tipo": "eixo",
                     "origem": [0, 0, 0],
                     "direcao": eixo.tolist(),
                 },
                 {
-                    "tipo":   "plano",
+                    "tipo": "plano",
                     "origem": [0, 0, 0],
                     "normal": normal.tolist(),
                 }

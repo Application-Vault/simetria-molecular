@@ -7,6 +7,7 @@ from main_app.main_dto import AnaliseRequest
 # --- imports do seu core ---
 from core.core_molecula import Molecule
 from core.core_grupo import Group
+from core.symmetry_detector import SymmetryDetector
 from engine.engine_symmetry_analyser import SymmetryAnalyzer
 from representation.representation_type import RepresentationType
 from analysis.analise_tipo import AnaliseTipo
@@ -19,6 +20,10 @@ from datetime import datetime
 
 import glob
 
+def identificar_grupo_pontual_por_geometria(mol_path: str) -> dict:
+    molecule = Molecule.from_file(mol_path)
+    detector = SymmetryDetector(molecule, tolerancia=0.02)
+    return detector.infer_group()
 
 def _resp_file_text(text: str, filename: str, content_type: str):
     return {
@@ -180,10 +185,28 @@ def processar_analise_bytes(molecula_bytes: bytes, molecula_filename: str, data:
     with open(mol_path, "wb") as f:
         f.write(molecula_bytes)
 
-    grupo_identificado = identificar_grupo_pontual_versao_alternativa(mol_path)
-    grupo_path = encontrar_json_grupo(grupo_identificado)
+    grupo_dinamico = None
 
-    app = MoleculeSymmetryApp.from_files(mol_path, grupo_path)
+    try:
+        grupo_dinamico = identificar_grupo_pontual_por_geometria(mol_path)
+        print("[DEBUG DETECTOR] grupo inferido:", grupo_dinamico["nome"])
+    except Exception as e:
+        print("[WARN] detector geométrico falhou, usando fallback:", repr(e))
+
+    if grupo_dinamico is not None:
+        molecule = Molecule.from_file(mol_path)
+        group = Group(
+            sistema="Molecular",
+            nome=grupo_dinamico["nome"],
+            ordem=grupo_dinamico.get("ordem", len(grupo_dinamico.get("operacoes", []))),
+            operacoes=grupo_dinamico.get("operacoes", []),
+            tolerancia=grupo_dinamico.get("tolerancia", 0.02),
+        )
+        app = MoleculeSymmetryApp(molecule=molecule, group=group)
+    else:
+        grupo_identificado = identificar_grupo_pontual_versao_alternativa(mol_path)
+        grupo_path = encontrar_json_grupo(grupo_identificado)
+        app = MoleculeSymmetryApp.from_files(mol_path, grupo_path)
 
     # 🔑 decide formato
     # (garante que 'pdf' e 'tex' sejam entendidos)
@@ -208,27 +231,7 @@ def processar_analise_bytes(molecula_bytes: bytes, molecula_filename: str, data:
         "uuid": temp_id,
         "molecula": getattr(app.molecule, "nome", None),
         "grupo": getattr(app.group, "nome", None),
-        "tex": tex,                 # ✅ sempre vai pro “Resultado”
+        "tex": tex,                 # sempre vai pro “Resultado”
     }
-
-    # só compila pdf se marcado
-    if formato == "pdf":
-        pdf_bytes = PdfReportGenerator(
-            metadata={
-                "molecula": app.molecule.nome,
-                "grupo": app.group.nome,
-                "ordem": len(app.group.operacoes),
-                "uuid": temp_id,
-                "data": datetime.today().strftime("%Y-%m-%d %H:%M"),
-                "sistema": app.group.sistema,
-            },
-            resultado=(SymmetryAnalyzer.de(app.group, app.molecule)
-                        .usar(RepresentationType.PERMUTATION)
-                        .configurar([AnaliseTipo[n.upper()] for n, ativo in data.analises.items() if ativo], temp_id)
-                        .executar()
-                        ._resultado)  # se você não quiser recalcular, guarde o resultado em variável
-        ).gerar_pdf()
-
-        resp["pdf_base64"] = base64.b64encode(pdf_bytes).decode("ascii")
 
     return resp
