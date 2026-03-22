@@ -64,6 +64,11 @@ class SymmetryDetector:
     # ============================================================
     # UTILITÁRIOS BÁSICOS
     # ============================================================
+
+    def _reflection_matrix(self, normal: np.ndarray) -> np.ndarray:
+        n = _normalize(np.asarray(normal, dtype=float))
+        return np.eye(3) - 2.0 * np.outer(n, n)
+
     def _match_structure(self, coords_a: np.ndarray, coords_b: np.ndarray, species: list[str], tol: float) -> bool:
         from collections import defaultdict
 
@@ -148,6 +153,59 @@ class SymmetryDetector:
 
         return unique
 
+    def _tem_reflexao(self, normal: np.ndarray) -> bool:
+        species, coords = self._extract_species_coords(self.molecule)
+        coords = np.asarray(coords, dtype=float)
+
+        center = coords.mean(axis=0)
+        centered = coords - center
+
+        M = _reflection_matrix(normal)
+        reflected = centered @ M.T
+
+        return self._match_structure(reflected, centered, species, self.tol)
+
+
+    def _candidate_plane_normals(self) -> list[np.ndarray]:
+        species, coords = self._extract_species_coords(self.molecule)
+        coords = np.asarray(coords, dtype=float)
+
+        center = coords.mean(axis=0)
+        centered = coords - center
+
+        normals = []
+
+        # cartesianos
+        normals.extend([
+            np.array([1.0, 0.0, 0.0]),
+            np.array([0.0, 1.0, 0.0]),
+            np.array([0.0, 0.0, 1.0]),
+        ])
+
+        # autovetores geométricos
+        cov = centered.T @ centered
+        _, eigvecs = np.linalg.eigh(cov)
+        for k in range(3):
+            normals.append(_normalize(eigvecs[:, k]))
+
+        # vetores centro -> átomo
+        for v in centered:
+            if np.linalg.norm(v) > self.tol:
+                normals.append(_normalize(v))
+
+        # remove duplicados até sinal
+        unique = []
+        for n in normals:
+            keep = True
+            for m in unique:
+                if np.linalg.norm(n - m) < 1e-3 or np.linalg.norm(n + m) < 1e-3:
+                    keep = False
+                    break
+            if keep:
+                unique.append(n)
+
+        return unique
+
     def detect_operations(self) -> list[dict[str, Any]]:
         """
         Começa com a identidade apenas.
@@ -186,6 +244,7 @@ class SymmetryDetector:
 
         if self.tem_um_eixo_cn():
             n, eixo_principal = self.obter_eixo_principal()
+            print("[DEBUG eixo principal]", n, eixo_principal)
 
             if self.tem_n_eixos_c2_perpendiculares(n, eixo_principal):
                 if self.tem_plano_horizontal(eixo_principal):
@@ -368,6 +427,22 @@ class SymmetryDetector:
 
     # 8) Existe um plano de espelho horizontal?
     def tem_plano_horizontal(self, eixo_principal: np.ndarray | None) -> bool:
+        if eixo_principal is None:
+            return False
+
+        eixo_principal = _normalize(np.asarray(eixo_principal, dtype=float))
+        normals = self._candidate_plane_normals()
+
+        for normal in normals:
+            # plano horizontal => normal paralela ao eixo principal
+            paralela = (
+                np.linalg.norm(normal - eixo_principal) < 1e-3
+                or np.linalg.norm(normal + eixo_principal) < 1e-3
+            )
+
+            if paralela and self._tem_reflexao(normal):
+                return True
+
         return False
 
     # 9) Existem n planos de espelho diagonais?
