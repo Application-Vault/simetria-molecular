@@ -194,7 +194,7 @@ Página \thepage\ de \pageref{{LastPage}}}}
                 perm_result_tex = self._latex_perm_to_math_text(perm_result)
 
                 linhas.append(
-                    rf"\makebox[3.3cm][r]{{$ {op1_tex} \circ {op2_tex} $}}"
+                    rf"\makebox[1.5cm][r]{{$ {op1_tex} \circ {op2_tex} $}}"
                     rf" & $= {op1_tex} \circ {perm2_tex}$"
                     rf" & $= {perm_result_tex}$"
                     rf" & \makebox[2.3cm][l]{{$= {resultado_tex}$}} \\"
