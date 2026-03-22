@@ -47,9 +47,6 @@ $
         if "operacoes_conjugacao" in self.resultado:
             classes = self.resultado.get("classes_conjugacao")
 
-            if not classes:
-                classes = self._extrair_classes_de_operacoes(self.resultado["operacoes_conjugacao"])
-
             blocos.append(
                 r"""
 \section{Operações de Conjugação}
@@ -256,35 +253,6 @@ Página \thepage\ de \pageref{{LastPage}}}}
     # -------------------------
     # HELPERS
     # -------------------------
-
-    def _extrair_classes_de_operacoes(self, operacoes_conjugacao: dict) -> dict:
-        """
-        Agrupa operações em classes de conjugação.
-        A chave da classe é escolhida como o primeiro elemento encontrado
-        da classe, preservando a ordem do dicionário de entrada.
-        """
-        classes = {}
-        visitados = set()
-
-        for g, conjugacoes in operacoes_conjugacao.items():
-            if g in visitados:
-                continue
-
-            classe = set([g])
-
-            for _, info in conjugacoes.items():
-                resultado = (info or {}).get("resultado")
-                if resultado:
-                    classe.add(str(resultado))
-
-            classe_ordenada = [op for op in operacoes_conjugacao.keys() if op in classe]
-
-            for op in classe_ordenada:
-                visitados.add(op)
-
-            classes[g] = classe_ordenada
-
-        return classes
 
     @staticmethod
     def latex_safe(op: str) -> str:
