@@ -3,6 +3,119 @@ from typing import Any
 
 import numpy as np
 
+# ============================================================
+# HELPERS
+# ============================================================
+
+def _normalize(self, v: np.ndarray, eps: float = 1e-12) -> np.ndarray:
+    n = float(np.linalg.norm(v))
+    if n < eps:
+        return v.copy()
+    return v / n
+
+def _rotation_matrix(self, axis: np.ndarray, angle_deg: float) -> np.ndarray:
+    axis = _normalize(np.asarray(axis, dtype=float))
+    theta = np.deg2rad(float(angle_deg))
+    x, y, z = axis
+
+    c = np.cos(theta)
+    s = np.sin(theta)
+    C = 1.0 - c
+
+    return np.array([
+        [c + x*x*C,     x*y*C - z*s, x*z*C + y*s],
+        [y*x*C + z*s,   c + y*y*C,   y*z*C - x*s],
+        [z*x*C - y*s,   z*y*C + x*s, c + z*z*C  ],
+    ], dtype=float)
+
+def _match_structure(self, coords_a: np.ndarray, coords_b: np.ndarray, species: list[str], tol: float) -> bool:
+    from collections import defaultdict
+
+    idx_by_species = defaultdict(list)
+    for i, sp in enumerate(species):
+        idx_by_species[sp].append(i)
+
+    used = set()
+
+    for i, sp in enumerate(species):
+        pi = coords_a[i]
+        candidates = idx_by_species[sp]
+
+        best_j = None
+        best_d = None
+
+        for j in candidates:
+            if j in used:
+                continue
+
+            d = np.linalg.norm(pi - coords_b[j])
+            if d <= tol and (best_d is None or d < best_d):
+                best_j = j
+                best_d = d
+
+        if best_j is None:
+            return False
+
+        used.add(best_j)
+
+    return True
+
+def _tem_rotacao(self, axis: np.ndarray, angle_deg: float) -> bool:
+    species, coords = self._extract_species_coords(self.molecule)
+    coords = np.asarray(coords, dtype=float)
+
+    center = coords.mean(axis=0)
+    centered = coords - center
+
+    M = _rotation_matrix(axis, angle_deg)
+    rotated = centered @ M.T
+
+    return self._match_structure(rotated, centered, species, self.tol)
+
+def _candidate_axes(self) -> list[np.ndarray]:
+    species, coords = self._extract_species_coords(self.molecule)
+    coords = np.asarray(coords, dtype=float)
+
+    center = coords.mean(axis=0)
+    centered = coords - center
+
+    axes = []
+
+    # cartesianos
+    axes.extend([
+        np.array([1.0, 0.0, 0.0]),
+        np.array([0.0, 1.0, 0.0]),
+        np.array([0.0, 0.0, 1.0]),
+    ])
+
+    # autovetores geométricos
+    cov = centered.T @ centered
+    _, eigvecs = np.linalg.eigh(cov)
+    for k in range(3):
+        axes.append(_normalize(eigvecs[:, k]))
+
+    # vetores centro -> átomo
+    for v in centered:
+        if np.linalg.norm(v) > self.tol:
+            axes.append(_normalize(v))
+
+    # remover duplicados até sinal
+    unique = []
+    for a in axes:
+        keep = True
+        for b in unique:
+            if np.linalg.norm(a - b) < 1e-3 or np.linalg.norm(a + b) < 1e-3:
+                keep = False
+                break
+        if keep:
+            unique.append(a)
+
+    return unique
+
+
+# ============================================================
+# SYMMETRY
+# ============================================================
 
 @dataclass
 class DetectedOperation:
@@ -222,11 +335,33 @@ class SymmetryDetector:
 
     # 5) Ela tem um eixo Cn?
     def tem_um_eixo_cn(self) -> bool:
+        axes = self._candidate_axes()
+
+        for axis in axes:
+            for n in [6, 5, 4, 3, 2]:
+                angle = 360.0 / n
+                if self._tem_rotacao(axis, angle):
+                    return True
+
         return False
 
     # 6) Qual é o eixo principal?
     def obter_eixo_principal(self) -> tuple[int, np.ndarray | None]:
-        return 1, None
+        axes = self._candidate_axes()
+
+        best_n = 1
+        best_axis = None
+
+        for axis in axes:
+            for n in [6, 5, 4, 3, 2]:
+                angle = 360.0 / n
+                if self._tem_rotacao(axis, angle):
+                    if n > best_n:
+                        best_n = n
+                        best_axis = axis.copy()
+                    break
+
+        return best_n, best_axis
 
     # 7) Existem n eixos C2 perpendiculares ao eixo principal?
     def tem_n_eixos_c2_perpendiculares(self, n: int, eixo_principal: np.ndarray | None) -> bool:
