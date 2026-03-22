@@ -160,7 +160,7 @@ class SymmetryDetector:
         center = coords.mean(axis=0)
         centered = coords - center
 
-        M = _reflection_matrix(normal)
+        M = self._reflection_matrix(normal)
         reflected = centered @ M.T
 
         return self._match_structure(reflected, centered, species, self.tol)
