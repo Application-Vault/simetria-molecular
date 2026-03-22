@@ -423,7 +423,35 @@ class SymmetryDetector:
 
     # 7) Existem n eixos C2 perpendiculares ao eixo principal?
     def tem_n_eixos_c2_perpendiculares(self, n: int, eixo_principal: np.ndarray | None) -> bool:
-        return False
+        if eixo_principal is None:
+            return False
+
+        eixo_principal = _normalize(np.asarray(eixo_principal, dtype=float))
+        axes = self._candidate_axes()
+
+        count = 0
+        encontrados = []
+
+        for axis in axes:
+            # eixo C2 perpendicular ao principal
+            perpendicular = abs(np.dot(axis, eixo_principal)) < 1e-3
+            if not perpendicular:
+                continue
+
+            duplicado = False
+            for prev in encontrados:
+                if np.linalg.norm(axis - prev) < 1e-3 or np.linalg.norm(axis + prev) < 1e-3:
+                    duplicado = True
+                    break
+
+            if duplicado:
+                continue
+
+            if self._tem_rotacao(axis, 180.0):
+                encontrados.append(axis)
+                count += 1
+
+        return count >= n
 
     # 8) Existe um plano de espelho horizontal?
     def tem_plano_horizontal(self, eixo_principal: np.ndarray | None) -> bool:
@@ -451,7 +479,36 @@ class SymmetryDetector:
 
     # 10) Existem n planos de espelho verticais?
     def tem_n_planos_verticais(self, n: int, eixo_principal: np.ndarray | None) -> bool:
-        return False
+        if eixo_principal is None:
+            return False
+
+        eixo_principal = _normalize(np.asarray(eixo_principal, dtype=float))
+        normals = self._candidate_plane_normals()
+
+        count = 0
+        encontrados = []
+
+        for normal in normals:
+            # plano vertical => normal perpendicular ao eixo principal
+            perpendicular = abs(np.dot(normal, eixo_principal)) < 1e-3
+
+            if not perpendicular:
+                continue
+
+            duplicado = False
+            for prev in encontrados:
+                if np.linalg.norm(normal - prev) < 1e-3 or np.linalg.norm(normal + prev) < 1e-3:
+                    duplicado = True
+                    break
+
+            if duplicado:
+                continue
+
+            if self._tem_reflexao(normal):
+                encontrados.append(normal)
+                count += 1
+
+        return count >= n
 
     # 11) Existe um eixo S2n?
     def tem_eixo_s2n(self, n: int, eixo_principal: np.ndarray | None) -> bool:
@@ -459,4 +516,20 @@ class SymmetryDetector:
 
     # 12) Existe um plano de espelho?
     def tem_plano_espelho(self) -> bool:
-        return False
+        normals = self._candidate_plane_normals()
+        encontrados = []
+
+        for normal in normals:
+            duplicado = False
+            for prev in encontrados:
+                if np.linalg.norm(normal - prev) < 1e-3 or np.linalg.norm(normal + prev) < 1e-3:
+                    duplicado = True
+                    break
+
+            if duplicado:
+                continue
+
+            if self._tem_reflexao(normal):
+                encontrados.append(normal)
+
+        return len(encontrados) > 0
