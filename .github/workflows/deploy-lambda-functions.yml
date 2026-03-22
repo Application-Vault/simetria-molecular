@@ -92,7 +92,7 @@ jobs:
       id-token: write
       contents: read
     env:
-      LAMBDA_NAME: simetria-molecular-pdf-prod
+      LAMBDA_NAME: simetria-molecular-prod-pdf
       SOURCE_DIR: infra/lambda/pdf_handler
       ZIP_NAME: simetria-pdf.zip
 
