@@ -139,7 +139,6 @@ class SymmetryDetector:
     # ============================================================
 
     # 1) A molécula é linear?
-
     def e_linear(self) -> bool:
         species, coords = self._extract_species_coords(self.molecule)
         coords = np.asarray(coords, dtype=float)
@@ -177,7 +176,40 @@ class SymmetryDetector:
 
     # 2) Existe inversão?
     def tem_inversao(self) -> bool:
-        return False
+        species, coords = self._extract_species_coords(self.molecule)
+        coords = np.asarray(coords, dtype=float)
+
+        if coords.ndim != 2 or coords.shape[1] != 3:
+            return False
+
+        center = coords.mean(axis=0)
+        centered = coords - center
+
+        usados = set()
+
+        for i, sp in enumerate(species):
+            alvo = -centered[i]
+
+            melhor_j = None
+            melhor_d = None
+
+            for j, sp_j in enumerate(species):
+                if j in usados:
+                    continue
+                if sp_j != sp:
+                    continue
+
+                d = np.linalg.norm(centered[j] - alvo)
+                if d <= self.tol and (melhor_d is None or d < melhor_d):
+                    melhor_j = j
+                    melhor_d = d
+
+            if melhor_j is None:
+                return False
+
+            usados.add(melhor_j)
+
+        return True
 
     # 3) Ela tem dois ou mais eixos Cn com n > 2?
     def tem_dois_ou_mais_eixos_cn_maior_que_2(self) -> bool:
