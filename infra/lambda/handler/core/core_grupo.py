@@ -68,22 +68,22 @@ class Group:
         """Carrega grupo de simetria a partir de arquivo JSON, inferindo o sistema pelo caminho."""
         import os
 
-        print(f"[DEBUG GROUP LOAD] path_json={path_json}")
+        # print(f"[DEBUG GROUP LOAD] path_json={path_json}")
 
         with open(path_json, "r", encoding="utf-8") as f:
             dados = json.load(f)
 
-        print(f"[DEBUG GROUP LOAD] nome={dados.get('nome')}")
-        print(f"[DEBUG GROUP LOAD] ordem={dados.get('ordem')}")
-        print(f"[DEBUG GROUP LOAD] tolerancia={dados.get('tolerancia')}")
+        # print(f"[DEBUG GROUP LOAD] nome={dados.get('nome')}")
+        # print(f"[DEBUG GROUP LOAD] ordem={dados.get('ordem')}")
+        # print(f"[DEBUG GROUP LOAD] tolerancia={dados.get('tolerancia')}")
 
-        for op in dados.get("operacoes", []):
-            if op.get("nome") == "\\mathrm{C}_{2}^{(a)}":
-                print(f"[DEBUG GROUP LOAD] C2a eixo={op.get('eixo')}")
-            if op.get("nome") == "\\mathrm{C}_{2}^{(b)}":
-                print(f"[DEBUG GROUP LOAD] C2b eixo={op.get('eixo')}")
-            if op.get("nome") == "\\mathrm{C}_{2}^{(c)}":
-                print(f"[DEBUG GROUP LOAD] C2c eixo={op.get('eixo')}")
+        # for op in dados.get("operacoes", []):
+        #     if op.get("nome") == "\\mathrm{C}_{2}^{(a)}":
+        #         print(f"[DEBUG GROUP LOAD] C2a eixo={op.get('eixo')}")
+        #     if op.get("nome") == "\\mathrm{C}_{2}^{(b)}":
+        #         print(f"[DEBUG GROUP LOAD] C2b eixo={op.get('eixo')}")
+        #     if op.get("nome") == "\\mathrm{C}_{2}^{(c)}":
+        #         print(f"[DEBUG GROUP LOAD] C2c eixo={op.get('eixo')}")
 
         nome = dados.get("nome")
         ordem = dados.get("ordem")

@@ -105,19 +105,19 @@ class PermutationRepresentation(Representation):
         if any(p == -1 for p in permutacao):
             raise ValueError("Permutação incompleta: alguns átomos não foram mapeados.")
 
-        print(f"[DEBUG] elemento={elem}")
-        print(f"[DEBUG] idx_transf={idx_transf}")
-        print(f"[DEBUG] idx_orig={idx_orig}")
-        print(f"[DEBUG] dist_sub=\n{dist_sub}")
+        # print(f"[DEBUG] elemento={elem}")
+        # print(f"[DEBUG] idx_transf={idx_transf}")
+        # print(f"[DEBUG] idx_orig={idx_orig}")
+        # print(f"[DEBUG] dist_sub=\n{dist_sub}")
         return permutacao
 
     @classmethod
     def from_matrix3d(cls, rep3d: Matrix3DRepresentation, molecule: Molecule):
         inst = cls(rep3d.nome_grupo)
         for nome, matriz in rep3d:
-            print(f"[DEBUG] tentando operação {nome}")
+            # print(f"[DEBUG] tentando operação {nome}")
             perm = cls._calcular_permutacao(molecule, matriz, nome_operacao=nome)
-            print(f"[DEBUG] operação {nome} -> perm {perm}")
+            # print(f"[DEBUG] operação {nome} -> perm {perm}")
             inst.adicionar(nome, perm)
         return inst
 
