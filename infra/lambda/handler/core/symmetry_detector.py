@@ -104,6 +104,37 @@ class SymmetryDetector:
         return self._group_payload("C1", "Grupo C1", ops)
 
     # ============================================================
+    # EXTRAÇÃO DE DADOS
+    # ============================================================
+    def _extract_species_coords(self, molecule):
+        if hasattr(molecule, "atoms"):
+            species = []
+            coords = []
+            for atom in molecule.atoms:
+                if isinstance(atom, dict):
+                    species.append(atom.get("element") or atom.get("simbolo"))
+                    coords.append(atom.get("coord") or atom.get("coords"))
+                else:
+                    species.append(
+                        getattr(atom, "element", None)
+                        or getattr(atom, "simbolo", None)
+                    )
+                    coords.append(
+                        getattr(atom, "coord", None)
+                        or getattr(atom, "coords", None)
+                    )
+            return species, coords
+
+        if hasattr(molecule, "species") and hasattr(molecule, "coords"):
+            return list(molecule.species), np.asarray(molecule.coords, dtype=float)
+
+        if hasattr(molecule, "elementos") and hasattr(molecule, "coordenadas"):
+            return list(molecule.elementos), np.asarray(molecule.coordenadas, dtype=float)
+
+        raise ValueError("Não consegui extrair espécies e coordenadas de Molecule.")
+
+
+    # ============================================================
     # LOSANGOS DO FLUXOGRAMA
     # ============================================================
 
