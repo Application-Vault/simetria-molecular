@@ -45,7 +45,10 @@ $
             )
 
         if "operacoes_conjugacao" in self.resultado:
-            classes = self._extrair_classes_de_operacoes(self.resultado["operacoes_conjugacao"])
+            classes = self.resultado.get("classes_conjugacao")
+
+            if not classes:
+                classes = self._extrair_classes_de_operacoes(self.resultado["operacoes_conjugacao"])
 
             blocos.append(
                 r"""

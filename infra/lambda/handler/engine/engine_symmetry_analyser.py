@@ -93,8 +93,8 @@ class SymmetryAnalyzer:
         if AnaliseTipo.CLASSES_CONJUGACAO in self._analises:
             classes, conjugacao = ClasseConjugacao(representacao).gerar()
 
-            print("[DEBUG CLASSES GERADAS]", classes)
-            print("[DEBUG CONJUGACAO GERADA]", conjugacao)
+            # print("[DEBUG CLASSES GERADAS]", classes)
+            # print("[DEBUG CONJUGACAO GERADA]", conjugacao)
             resultado["operacoes_conjugacao"] = conjugacao
             resultado["classes_conjugacao"] = classes
 
@@ -133,9 +133,6 @@ class SymmetryAnalyzer:
             "data": datetime.today().strftime("%Y-%m-%d %H:%M"),
             "sistema": self.group.sistema
         }
-
-
-
 
     def _buscar_operacao(self, sel_op):
         """Summary
