@@ -26,4 +26,11 @@ resource "aws_lambda_function" "pdf_handler" {
   }
 
   depends_on = [aws_cloudwatch_log_group.pdf_handler]
+
+  lifecycle {
+    ignore_changes = [
+      filename,
+      source_code_hash
+    ]
+  }
 }

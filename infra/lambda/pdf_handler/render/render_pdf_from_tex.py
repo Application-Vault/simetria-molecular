@@ -52,3 +52,4 @@ class PdfFromTexGenerator:
         print("[PDF] PDF gerado com sucesso!")
 
         return pdf_path.read_bytes()
+
