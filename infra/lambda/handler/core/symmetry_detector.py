@@ -108,8 +108,41 @@ class SymmetryDetector:
     # ============================================================
 
     # 1) A molécula é linear?
+
     def e_linear(self) -> bool:
-        return False
+        species, coords = self._extract_species_coords(self.molecule)
+        coords = np.asarray(coords, dtype=float)
+
+        if coords.ndim != 2 or coords.shape[1] != 3:
+            return False
+
+        if len(coords) < 3:
+            return True
+
+        center = coords.mean(axis=0)
+        centered = coords - center
+
+        ref = None
+        for v in centered:
+            if np.linalg.norm(v) > self.tol:
+                ref = v / np.linalg.norm(v)
+                break
+
+        if ref is None:
+            return True
+
+        for v in centered:
+            norm = np.linalg.norm(v)
+            if norm <= self.tol:
+                continue
+
+            u = v / norm
+            cross = np.linalg.norm(np.cross(ref, u))
+
+            if cross > 5 * self.tol:
+                return False
+
+        return True
 
     # 2) Existe inversão?
     def tem_inversao(self) -> bool:
