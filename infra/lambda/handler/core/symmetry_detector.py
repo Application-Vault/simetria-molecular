@@ -55,6 +55,37 @@ class DetectedOperation:
     angulo: float | None = None
     plano_normal: list[float] | None = None
 
+    def _log_summary(
+        self,
+        ops: list[dict[str, Any]],
+        rotations: list[dict[str, Any]],
+        reflections: list[dict[str, Any]],
+        impropers: list[dict[str, Any]],
+        has_i: bool,
+        n_main: int | None,
+        main_axis: np.ndarray | None,
+        sigma_h: bool,
+        sigma_v_count: int,
+        sigma_d_count: int,
+        c2_perp_count: int,
+    ) -> None:
+        print("========== [DEBUG SYMMETRY DETECTOR] ==========")
+        print("species:", self.species)
+        print("center:", self.center.tolist())
+        print("linear:", self.is_linear())
+        print("has_inversion:", has_i)
+        print("n_main:", n_main)
+        print("main_axis:", None if main_axis is None else np.round(main_axis, 6).tolist())
+        print("sigma_h:", sigma_h)
+        print("sigma_v_count:", sigma_v_count)
+        print("sigma_d_count:", sigma_d_count)
+        print("c2_perp_count:", c2_perp_count)
+        print("rotations:", [op["nome"] for op in rotations])
+        print("reflections:", [op["nome"] for op in reflections])
+        print("impropers:", [op["nome"] for op in impropers])
+        print("all_ops:", [op["nome"] for op in ops])
+        print("==============================================")
+        
     def to_dict(self) -> dict[str, Any]:
         d = {
             "tipo": self.tipo,
@@ -385,21 +416,38 @@ class SymmetryDetector:
         ops = self.detect_operations()
 
         if self.is_linear():
-            if self.has_inversion():
-                return self._group_payload("D∞h", "Molécula linear com inversão", ops)
-            return self._group_payload("C∞v", "Molécula linear sem inversão", ops)
+            nome = "D∞h" if self.has_inversion() else "C∞v"
+            print(f"[DEBUG DETECTOR] linear=True -> grupo={nome}")
+            return self._group_payload(nome, "Molécula linear", ops)
 
         rotations = [op for op in ops if op["tipo"] == "rotacao"]
         reflections = [op for op in ops if op["tipo"] == "reflexao"]
         impropers = [op for op in ops if op["tipo"] == "impropria"]
         has_i = any(op["tipo"] == "inversao" for op in ops)
 
-        if len(ops) == 1:
-            return self._group_payload("C1", "Apenas identidade encontrada", ops)
-
-        # eixo principal
         n_main = self._max_rotation_order(rotations)
+        main_axis = self._main_axis(rotations)
 
+        sigma_h = self._has_plane_perpendicular_to_axis(reflections, main_axis)
+        sigma_v_count = self._count_planes_containing_axis(reflections, main_axis)
+        c2_perp_count = self._count_perpendicular_c2_axes(rotations, main_axis)
+        sigma_d_count = self._count_dihedral_planes(reflections, main_axis)
+
+        self._log_summary(
+            ops=ops,
+            rotations=rotations,
+            reflections=reflections,
+            impropers=impropers,
+            has_i=has_i,
+            n_main=n_main,
+            main_axis=main_axis,
+            sigma_h=sigma_h,
+            sigma_v_count=sigma_v_count,
+            sigma_d_count=sigma_d_count,
+            c2_perp_count=c2_perp_count,
+        )
+
+        # nenhum eixo próprio principal
         if n_main is None:
             if has_i and not reflections:
                 return self._group_payload("Ci", "Inversão sem eixo próprio", ops)
@@ -409,18 +457,29 @@ class SymmetryDetector:
                 return self._group_payload("C2h", "Caso ambíguo inicial com reflexão + inversão", ops)
             return self._group_payload("C1", "Sem eixo próprio detectado", ops)
 
-        # ramo Cn / Cnv / Cnh / S2n
-        has_sigma_h = self._has_plane_perpendicular_to_axis(reflections, self._main_axis(rotations))
-        sigma_vertical_count = self._count_planes_containing_axis(reflections, self._main_axis(rotations))
-        has_sn = len(impropers) > 0
+        # -------------------------
+        # Ramo D_n
+        # -------------------------
+        if c2_perp_count >= max(1, n_main):
+            if sigma_h:
+                return self._group_payload(f"D{n_main}h", "Eixo principal, C2 perpendiculares e plano horizontal", ops)
 
-        if has_sigma_h:
+            if sigma_d_count >= max(1, n_main):
+                return self._group_payload(f"D{n_main}d", "Eixo principal, C2 perpendiculares e planos diagonais", ops)
+
+            return self._group_payload(f"D{n_main}", "Eixo principal com C2 perpendiculares", ops)
+
+        # -------------------------
+        # Ramo C_n
+        # -------------------------
+        if sigma_h:
             return self._group_payload(f"C{n_main}h", "Eixo principal com plano horizontal", ops)
 
-        if sigma_vertical_count > 0:
+        if sigma_v_count > 0:
             return self._group_payload(f"C{n_main}v", "Eixo principal com planos verticais", ops)
 
-        if has_sn:
+        if len(impropers) > 0:
+            # Mantemos simples por enquanto
             return self._group_payload(f"S{n_main}", "Eixo impróprio detectado", ops)
 
         return self._group_payload(f"C{n_main}", "Apenas eixo principal detectado", ops)

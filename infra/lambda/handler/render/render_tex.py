@@ -6,6 +6,11 @@ class LatexReportGenerator:
         self.metadata = metadata
         self.resultado = resultado
 
+    def _latex_group_name(self, s: str) -> str:
+        s = str(s)
+        s = s.replace("∞", r"$\infty$")
+        return s
+
     def gerar_documento(self):
         blocos = []
 
@@ -82,7 +87,7 @@ $
 
         sistema = self._latex_escape_text(str(self.metadata.get("sistema", "")))
         molecula = self._latex_escape_text(str(self.metadata.get("molecula", "")))
-        grupo = self._latex_escape_text(str(self.metadata.get("grupo", "")))
+        grupo = self._latex_group_name(self.metadata.get("grupo", ""))
         ordem = self._latex_escape_text(str(self.metadata.get("ordem", "")))
         data = self._latex_escape_text(str(self.metadata.get("data", "")))
         uuid = self._latex_escape_text(str(self.metadata.get("uuid", "")))
