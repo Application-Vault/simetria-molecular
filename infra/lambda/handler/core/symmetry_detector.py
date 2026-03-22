@@ -7,13 +7,13 @@ import numpy as np
 # HELPERS
 # ============================================================
 
-def _normalize(self, v: np.ndarray, eps: float = 1e-12) -> np.ndarray:
+def _normalize(v: np.ndarray, eps: float = 1e-12) -> np.ndarray:
     n = float(np.linalg.norm(v))
     if n < eps:
         return v.copy()
     return v / n
 
-def _rotation_matrix(self, axis: np.ndarray, angle_deg: float) -> np.ndarray:
+def _rotation_matrix(axis: np.ndarray, angle_deg: float) -> np.ndarray:
     axis = _normalize(np.asarray(axis, dtype=float))
     theta = np.deg2rad(float(angle_deg))
     x, y, z = axis
