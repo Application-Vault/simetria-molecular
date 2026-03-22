@@ -179,14 +179,31 @@
 
             <!-- Gráfico -->
             <div id="render-grafico" class="section light" style="display:none;">
-              <h3>Formato Gráfico</h3>
-              <label><input type="radio" name="formatoGrafico" value="3d" checked> 3D Interativo (Em breve)</label><br>
-              <label><input type="radio" name="formatoGrafico" value="gif" disabled> GIF (Em breve)</label><br>
+              <h3>Visualização 3D</h3>
+
+              <div class="form-group">
+                <strong>Estilo</strong><br>
+                <label><input type="radio" name="estiloGrafico" value="ballstick" checked> Ball & Stick</label><br>
+                <label><input type="radio" name="estiloGrafico" value="stick"> Bastões</label><br>
+                <label><input type="radio" name="estiloGrafico" value="sphere"> Esferas</label><br>
+                <label><input type="radio" name="estiloGrafico" value="line"> Linhas</label><br>
+              </div>
 
               <h3 style="margin-top:12px;">Paleta de Cores</h3>
-              <label><input type="radio" name="paletaCores" value="PASTEL" checked> Pastel</label><br>
+              <label><input type="radio" name="paletaCores" value="PADRAO" checked> Padrão por elemento</label><br>
+              <label><input type="radio" name="paletaCores" value="PASTEL"> Pastel</label><br>
               <label><input type="radio" name="paletaCores" value="VIBRANTE"> Vibrante</label><br>
               <label><input type="radio" name="paletaCores" value="MONOCROMATICA"> Monocromática</label><br>
+
+              <h3 style="margin-top:12px;">Exibição</h3>
+              <label><input type="checkbox" id="mostrarH" checked> Mostrar hidrogênios</label><br>
+              <label><input type="checkbox" id="mostrarLabels"> Mostrar labels dos átomos</label><br>
+              <label><input type="checkbox" id="ativarSpin"> Rotação automática</label><br>
+              <label><input type="checkbox" id="fundoEscuro"> Fundo escuro</label><br>
+
+              <div style="margin-top:14px;">
+                <button type="button" class="btn" id="resetViewerBtn">Resetar visualização</button>
+              </div>
             </div>
           </div>
         </div>
