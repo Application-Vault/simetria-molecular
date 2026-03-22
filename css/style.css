@@ -1,6 +1,7 @@
 @import url("./theme-toggle.css");
 @import url("./resultados.css");
 @import url("./viewer.css");
+@import url("./footer.css");
 
 :root {
   --bg: #0b0f16;
