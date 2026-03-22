@@ -28,91 +28,6 @@ def _rotation_matrix(self, axis: np.ndarray, angle_deg: float) -> np.ndarray:
         [z*x*C - y*s,   z*y*C + x*s, c + z*z*C  ],
     ], dtype=float)
 
-def _match_structure(self, coords_a: np.ndarray, coords_b: np.ndarray, species: list[str], tol: float) -> bool:
-    from collections import defaultdict
-
-    idx_by_species = defaultdict(list)
-    for i, sp in enumerate(species):
-        idx_by_species[sp].append(i)
-
-    used = set()
-
-    for i, sp in enumerate(species):
-        pi = coords_a[i]
-        candidates = idx_by_species[sp]
-
-        best_j = None
-        best_d = None
-
-        for j in candidates:
-            if j in used:
-                continue
-
-            d = np.linalg.norm(pi - coords_b[j])
-            if d <= tol and (best_d is None or d < best_d):
-                best_j = j
-                best_d = d
-
-        if best_j is None:
-            return False
-
-        used.add(best_j)
-
-    return True
-
-def _tem_rotacao(self, axis: np.ndarray, angle_deg: float) -> bool:
-    species, coords = self._extract_species_coords(self.molecule)
-    coords = np.asarray(coords, dtype=float)
-
-    center = coords.mean(axis=0)
-    centered = coords - center
-
-    M = _rotation_matrix(axis, angle_deg)
-    rotated = centered @ M.T
-
-    return self._match_structure(rotated, centered, species, self.tol)
-
-def _candidate_axes(self) -> list[np.ndarray]:
-    species, coords = self._extract_species_coords(self.molecule)
-    coords = np.asarray(coords, dtype=float)
-
-    center = coords.mean(axis=0)
-    centered = coords - center
-
-    axes = []
-
-    # cartesianos
-    axes.extend([
-        np.array([1.0, 0.0, 0.0]),
-        np.array([0.0, 1.0, 0.0]),
-        np.array([0.0, 0.0, 1.0]),
-    ])
-
-    # autovetores geométricos
-    cov = centered.T @ centered
-    _, eigvecs = np.linalg.eigh(cov)
-    for k in range(3):
-        axes.append(_normalize(eigvecs[:, k]))
-
-    # vetores centro -> átomo
-    for v in centered:
-        if np.linalg.norm(v) > self.tol:
-            axes.append(_normalize(v))
-
-    # remover duplicados até sinal
-    unique = []
-    for a in axes:
-        keep = True
-        for b in unique:
-            if np.linalg.norm(a - b) < 1e-3 or np.linalg.norm(a + b) < 1e-3:
-                keep = False
-                break
-        if keep:
-            unique.append(a)
-
-    return unique
-
-
 # ============================================================
 # SYMMETRY
 # ============================================================
@@ -149,6 +64,90 @@ class SymmetryDetector:
     # ============================================================
     # UTILITÁRIOS BÁSICOS
     # ============================================================
+    def _match_structure(self, coords_a: np.ndarray, coords_b: np.ndarray, species: list[str], tol: float) -> bool:
+        from collections import defaultdict
+
+        idx_by_species = defaultdict(list)
+        for i, sp in enumerate(species):
+            idx_by_species[sp].append(i)
+
+        used = set()
+
+        for i, sp in enumerate(species):
+            pi = coords_a[i]
+            candidates = idx_by_species[sp]
+
+            best_j = None
+            best_d = None
+
+            for j in candidates:
+                if j in used:
+                    continue
+
+                d = np.linalg.norm(pi - coords_b[j])
+                if d <= tol and (best_d is None or d < best_d):
+                    best_j = j
+                    best_d = d
+
+            if best_j is None:
+                return False
+
+            used.add(best_j)
+
+        return True
+
+    def _tem_rotacao(self, axis: np.ndarray, angle_deg: float) -> bool:
+        species, coords = self._extract_species_coords(self.molecule)
+        coords = np.asarray(coords, dtype=float)
+
+        center = coords.mean(axis=0)
+        centered = coords - center
+
+        M = _rotation_matrix(axis, angle_deg)
+        rotated = centered @ M.T
+
+        return self._match_structure(rotated, centered, species, self.tol)
+
+    def _candidate_axes(self) -> list[np.ndarray]:
+        species, coords = self._extract_species_coords(self.molecule)
+        coords = np.asarray(coords, dtype=float)
+
+        center = coords.mean(axis=0)
+        centered = coords - center
+
+        axes = []
+
+        # cartesianos
+        axes.extend([
+            np.array([1.0, 0.0, 0.0]),
+            np.array([0.0, 1.0, 0.0]),
+            np.array([0.0, 0.0, 1.0]),
+        ])
+
+        # autovetores geométricos
+        cov = centered.T @ centered
+        _, eigvecs = np.linalg.eigh(cov)
+        for k in range(3):
+            axes.append(_normalize(eigvecs[:, k]))
+
+        # vetores centro -> átomo
+        for v in centered:
+            if np.linalg.norm(v) > self.tol:
+                axes.append(_normalize(v))
+
+        # remover duplicados até sinal
+        unique = []
+        for a in axes:
+            keep = True
+            for b in unique:
+                if np.linalg.norm(a - b) < 1e-3 or np.linalg.norm(a + b) < 1e-3:
+                    keep = False
+                    break
+            if keep:
+                unique.append(a)
+
+        return unique
+
     def detect_operations(self) -> list[dict[str, Any]]:
         """
         Começa com a identidade apenas.
