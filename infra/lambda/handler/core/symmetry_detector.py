@@ -409,6 +409,30 @@ class SymmetryDetector:
 
         self._ops.append(op)
 
+    def _count_perpendicular_c2_axes(self, rotations: list[dict], main_axis):
+        if main_axis is None:
+            return 0
+
+        main_axis = _normalize(main_axis)
+        axes = self._axes_from_rotations(rotations)
+
+        perp_axes = []
+
+        for n, axis, op in axes:
+            if n != 2:
+                continue
+
+            if abs(np.dot(main_axis, axis)) < 5e-2:
+                duplicated = False
+                for prev in perp_axes:
+                    if np.linalg.norm(axis - prev) < 1e-3 or np.linalg.norm(axis + prev) < 1e-3:
+                        duplicated = True
+                        break
+                if not duplicated:
+                    perp_axes.append(axis)
+
+        return len(perp_axes)
+        
     # ----------------------------
     # Classificação inicial
     # ----------------------------
