@@ -3,7 +3,6 @@ import base64
 
 from render.render_pdf_from_tex import PdfFromTexGenerator
 
-
 def response(status, body):
     return {
         "statusCode": status,
