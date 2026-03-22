@@ -49,3 +49,44 @@ export function initMoleculeLoader() {
     atualizarViewerDaMolecula();
   });
 }
+
+export async function carregarListaDeMoleculas() {
+  const select = $('moleculaSelect');
+  if (!select) return;
+
+  select.innerHTML = '<option value="">Carregando moléculas...</option>';
+
+  try {
+    const resp = await fetch(API_CONFIG.baseUrlMoleculasList);
+    if (!resp.ok) throw new Error('Erro ao carregar lista de moléculas');
+
+    const data = await resp.json();
+    const moleculas = Array.isArray(data?.moleculas) ? data.moleculas : [];
+
+    select.innerHTML = '';
+
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = 'Selecione uma molécula ...';
+    select.appendChild(defaultOption);
+
+    moleculas.forEach((mol) => {
+      const option = document.createElement('option');
+      option.value = mol.id;
+      option.textContent = mol.label;
+      select.appendChild(option);
+    });
+
+    const otherOption = document.createElement('option');
+    otherOption.value = 'outro';
+    otherOption.textContent = 'Outra (especifique)';
+    select.appendChild(otherOption);
+
+  } catch (err) {
+    console.error(err);
+    select.innerHTML = `
+      <option value="">Erro ao carregar moléculas</option>
+      <option value="outro">Outra (especifique)</option>
+    `;
+  }
+}

@@ -3,4 +3,5 @@ export const API_CONFIG = {
   baseUrlGrupos: 'https://x8clyvj53d.execute-api.us-east-2.amazonaws.com/api/grupo/',
   baseUrlMoleculas: 'https://x8clyvj53d.execute-api.us-east-2.amazonaws.com/api/molecula/',
   baseUrlPdf: 'https://x8clyvj53d.execute-api.us-east-2.amazonaws.com/api/pdf',
+  baseUrlMoleculasList: 'https://x8clyvj53d.execute-api.us-east-2.amazonaws.com/api/moleculas',
 };
