@@ -93,7 +93,10 @@ class SymmetryAnalyzer:
             # print(resultado["operacoes_multiplicacao"])
 
         if AnaliseTipo.CLASSES_CONJUGACAO in self._analises:
-            resultado["operacoes_conjugacao"] = ClasseConjugacao(representacao).gerar()
+            classes, conjugacao = ClasseConjugacao(representacao).gerar()
+
+            resultado["operacoes_conjugacao"] = conjugacao
+            resultado["classes_conjugacao"] = classes
             # print(">>>>>>>>>>>>>>>>>>>>")
             # print(resultado["operacoes_conjugacao"])
 
