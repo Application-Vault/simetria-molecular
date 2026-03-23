@@ -133,7 +133,6 @@ _NOME_TO_GRUPO = {
     "Benzeno": "D6h",
     "CO2": "Dinfh",
     "Etano eclipsado": "D3h",
-    "ethane_eclipsed": "D3h",
     "Etano estrelado": "D3d",
     "Hexafluoreto de Enxofre": "Oh",
     "SF6": "Oh",
