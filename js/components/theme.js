@@ -21,8 +21,11 @@ export function initThemeToggle() {
   }
 
   const saved = localStorage.getItem(key);
+
   if (saved === 'dark') {
-    document.body.setAttribute('data-theme', 'light');
+    document.body.removeAttribute('data-theme'); // dark explícito
+  } else {
+    document.body.setAttribute('data-theme', 'light'); // default = light
   }
 
   syncThemeIcon();
