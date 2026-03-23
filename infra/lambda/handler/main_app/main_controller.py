@@ -126,24 +126,23 @@ def _slug(s: str) -> str:
 
 # "slug" do nome (2a linha do xyz) -> grupo pontual
 _NOME_TO_GRUPO = {
-    # básicos
-    "H2O": "C2v",
-    "NH3": "C3v",
-    "BF3": "D3h",
-    "Benzeno": "D6h",
-    "CO2": "Dinfh",
-    "Etano eclipsado": "D3h",
-    "Etano estrelado": "D3d",
-    "Hexafluoreto de Enxofre": "Oh",
-    "SF6": "Oh",
-    "Metano": "Td",
+    _slug("H2O"): "C2v",
+    _slug("NH3"): "C3v",
+    _slug("BF3"): "D3h",
+    _slug("Benzeno"): "D6h",
+    _slug("CO2"): "Dinfh",
+    _slug("Etano eclipsado"): "D3h",
+    _slug("ethane_eclipsed"): "D3h",
+    _slug("Etano estrelado"): "D3d",
+    _slug("Hexafluoreto de Enxofre"): "Oh",
+    _slug("SF6"): "Oh",
+    _slug("Metano"): "Td",
 
-    # extras da sua lista
-    "C60F36": "S6",
-    "Co4(Cp)4": "S4",
-    "Complexo de Fe(III)": "S6",
-    "Infinitene - C48H24": "D2",
-    "1,3,5,7-tetramethyl-cyclooctatetraeno": "S4",
+    _slug("C60F36"): "S6",
+    _slug("Co4(Cp)4"): "S4",
+    _slug("Complexo de Fe(III)"): "S6",
+    _slug("Infinitene - C48H24"): "D2",
+    _slug("1,3,5,7-tetramethyl-cyclooctatetraeno"): "S4",
 }
 
 def identificar_grupo_pontual_versao_alternativa(xyz_path: str) -> str:
