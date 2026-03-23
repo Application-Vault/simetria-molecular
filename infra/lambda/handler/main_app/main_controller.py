@@ -126,11 +126,37 @@ def _slug(s: str) -> str:
 
 # "slug" do nome (2a linha do xyz) -> grupo pontual
 _NOME_TO_GRUPO = {
+    # básicos
+    "agua": "C2v",
+    "h2o": "C2v",
+
+    "amonia": "C3v",
+    "nh3": "C3v",
+
+    "bf3": "D3h",
+
     "benzeno": "D6h",
+
+    "co2": "Dinfh",
+
     "etano_eclipsado": "D3h",
+    "ethane_eclipsed": "D3h",
+
     "etano_estrelado": "D3d",
-    "hexafluoreto_de_enxofre": "Oh",
+    "ethane_staggered": "D3d",
+
+    "hexafluoreto_enxofre": "Oh",
+    "sf6": "Oh",
+
     "metano": "Td",
+    "ch4": "Td",
+
+    # extras da sua lista
+    "c60f36": "S6",
+    "cluster_co4cp4": "S4",
+    "feiii_tetrathiolate": "S6",
+    "infinitene": "D2",
+    "tetramethyl_cyclooctatetraeno": "S4",
 }
 
 def identificar_grupo_pontual_versao_alternativa(xyz_path: str) -> str:
@@ -185,13 +211,15 @@ def processar_analise_bytes(molecula_bytes: bytes, molecula_filename: str, data:
     with open(mol_path, "wb") as f:
         f.write(molecula_bytes)
 
+    usar_detector = False
     grupo_dinamico = None
 
-    try:
-        grupo_dinamico = identificar_grupo_pontual_por_geometria(mol_path)
-        print("[DEBUG DETECTOR] grupo inferido:", grupo_dinamico["nome"])
-    except Exception as e:
-        print("[WARN] detector geométrico falhou, usando fallback:", repr(e))
+    if usar_detector:
+        try:
+            grupo_dinamico = identificar_grupo_pontual_por_geometria(mol_path)
+            print("[DEBUG DETECTOR] grupo inferido:", grupo_dinamico["nome"])
+        except Exception as e:
+            print("[WARN] detector geométrico falhou, usando fallback:", repr(e))
 
     if grupo_dinamico is not None:
         molecule = Molecule.from_file(mol_path)
