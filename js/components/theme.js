@@ -21,7 +21,7 @@ export function initThemeToggle() {
   }
 
   const saved = localStorage.getItem(key);
-  if (saved === 'light') {
+  if (saved === 'dark') {
     document.body.setAttribute('data-theme', 'light');
   }
 
