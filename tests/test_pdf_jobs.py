@@ -72,7 +72,9 @@ class PdfJobTests(unittest.TestCase):
             self.assertEqual(client.call_count, 2)
             discovery.head_bucket.assert_called_once_with(Bucket="private-jobs")
             self.assertEqual(client.call_args.kwargs["region_name"], "us-east-1")
+            self.assertEqual(client.call_args.kwargs["endpoint_url"], "https://s3.us-east-1.amazonaws.com")
             self.assertEqual(client.call_args.kwargs["config"].signature_version, "s3v4")
+            self.assertEqual(client.call_args.kwargs["config"].s3["addressing_style"], "virtual")
 
     def test_storage_rejects_missing_bucket_region(self):
         discovery = Mock()

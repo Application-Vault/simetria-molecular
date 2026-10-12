@@ -45,7 +45,13 @@ def storage():
         region = metadata.get("ResponseMetadata", {}).get("HTTPHeaders", {}).get("x-amz-bucket-region")
         if not region:
             raise RuntimeError("Could not determine PDF bucket region")
-        s3 = boto3.client("s3", region_name=region, config=Config(signature_version="s3v4"))
+        s3 = boto3.client(
+            "s3",
+            region_name=region,
+            endpoint_url=f"https://s3.{region}.amazonaws.com",
+            config=Config(signature_version="s3v4", s3={"addressing_style": "virtual"}),
+        )
+        logger.info("PDF S3 signing region: %s", region)
     return s3
 
 
@@ -152,7 +158,7 @@ def job_status(event, bucket):
     if job["status"] == "completed":
         url = storage().generate_presigned_url(
             "get_object",
-            Params={"Bucket": bucket, "Key": job_key(job_id, "report.pdf"), "ResponseContentType": "application/pdf", "ResponseContentDisposition": 'inline; filename="report.pdf"'},
+            Params={"Bucket": bucket, "Key": job_key(job_id, "report.pdf")},
             ExpiresIn=300,
         )
         if (event.get("queryStringParameters") or {}).get("download") == "1":
