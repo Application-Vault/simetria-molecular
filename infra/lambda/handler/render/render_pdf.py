@@ -8,14 +8,15 @@ from render.render_tex import LatexReportGenerator
 
 
 class PdfReportGenerator:
-    def __init__(self, metadata: Dict[str, Any], resultado: Dict[str, Any], tectonic_path: str = None):
+    def __init__(self, metadata: Dict[str, Any], resultado: Dict[str, Any], tectonic_path: str = None, idioma: str = "pt"):
         self.metadata = metadata
         self.resultado = resultado
+        self.idioma = idioma
         self.tectonic_path = tectonic_path or "/var/task/bin/tectonic"  # dentro do zip
 
     def gerar_pdf(self) -> bytes:
         # 1) gera o TEX "lindo"
-        tex_str = LatexReportGenerator(self.metadata, self.resultado).gerar_documento()
+        tex_str = LatexReportGenerator(self.metadata, self.resultado, idioma=self.idioma).gerar_documento()
 
         # 2) escreve em /tmp e compila
         uid = self.metadata.get("uuid", "SIM")

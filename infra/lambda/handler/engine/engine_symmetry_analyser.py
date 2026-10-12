@@ -103,7 +103,7 @@ class SymmetryAnalyzer:
         self._resultado = resultado
         return self
 
-    def renderizar(self, formato: RenderTipo) -> str:
+    def renderizar(self, formato: RenderTipo, idioma: str = "pt") -> str:
         """Summary
 
         Raises:
@@ -116,9 +116,9 @@ class SymmetryAnalyzer:
 
         metadata = self._gerar_metadata()
         if formato == RenderTipo.TEX:
-            return LatexReportGenerator(metadata, self._resultado).gerar_documento()
+            return LatexReportGenerator(metadata, self._resultado, idioma=idioma).gerar_documento()
         elif formato == RenderTipo.PDF:
-            return PdfReportGenerator(metadata, self._resultado).gerar_pdf()  # bytes
+            return PdfReportGenerator(metadata, self._resultado, idioma=idioma).gerar_pdf()  # bytes
         else:
             raise ValueError(f"Formato de saída não suportado: {formato}")
 

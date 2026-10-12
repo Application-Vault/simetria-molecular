@@ -1,10 +1,38 @@
 import re
 
+REPORT_STRINGS = {
+    "Permutações Básicas": {"en": "Basic Permutations", "zh": "基本置换"},
+    "Operações de Multiplicação": {"en": "Multiplication Operations", "zh": "乘法运算"},
+    "Tabela de Multiplicação": {"en": "Multiplication Table", "zh": "乘法表"},
+    "Operações de Multiplicação Detalhadas": {"en": "Detailed Multiplication Operations", "zh": "乘法运算详情"},
+    "Operações de Conjugação": {"en": "Conjugation Operations", "zh": "共轭运算"},
+    "Tabela de Conjugação": {"en": "Conjugation Table", "zh": "共轭表"},
+    "Operações de Conjugação Detalhadas": {"en": "Detailed Conjugation Operations", "zh": "共轭运算详情"},
+    "Agrupamento em Classes de Conjugação": {"en": "Grouping into Conjugacy Classes", "zh": "共轭类分组"},
+    "Conjugações de": {"en": "Conjugations of", "zh": "共轭运算："},
+    "Análise de Simetria": {"en": "Symmetry Analysis", "zh": "对称性分析"},
+    "Sistema": {"en": "System", "zh": "系统"},
+    "Tempo de Execução": {"en": "Execution Time", "zh": "执行时间"},
+    "Molécula": {"en": "Molecule", "zh": "分子"},
+    "Grupo": {"en": "Group", "zh": "群"},
+    "Ordem": {"en": "Order", "zh": "阶"},
+    "Relatório": {"en": "Report", "zh": "报告"},
+    "Página": {"en": "Page", "zh": "页"},
+    "de": {"en": "of", "zh": "/"},
+    "Sumário": {"en": "Contents", "zh": "目录"},
+}
+
 
 class LatexReportGenerator:
-    def __init__(self, metadata, resultado):
+    def __init__(self, metadata, resultado, idioma="pt"):
         self.metadata = metadata
         self.resultado = resultado
+        if idioma not in ("pt", "en", "zh"):
+            raise ValueError("Unsupported report language")
+        self.idioma = idioma
+
+    def _t(self, source):
+        return REPORT_STRINGS.get(source, {}).get(self.idioma, source)
 
     def _latex_group_name(self, s: str) -> str:
         s = str(s)
@@ -17,36 +45,36 @@ class LatexReportGenerator:
         if "permutacoes" in self.resultado:
             blocos.append(
                 r"""
-\section{Permutações Básicas}
+\section{%s}
 \[
 %s
 \]
 """
-                % self._formatar_permutacoes(self.resultado["permutacoes"])
+                % (self._t("Permutações Básicas"), self._formatar_permutacoes(self.resultado["permutacoes"]))
             )
 
         if "operacoes_multiplicacao" in self.resultado:
             blocos.append(
                 r"""
-\section{Operações de Multiplicação}
-\subsection{Tabela de Multiplicação}
+\section{%s}
+\subsection{%s}
 \begin{adjustbox}{max width=\linewidth, angle=90, center}
 $
 %s
 $
 \end{adjustbox}
 """
-                % self._formatar_tabela_multiplicacao(self.resultado["operacoes_multiplicacao"])
+                % (self._t("Operações de Multiplicação"), self._t("Tabela de Multiplicação"), self._formatar_tabela_multiplicacao(self.resultado["operacoes_multiplicacao"]))
             )
 
             blocos.append(
                 r"""
-\subsection{Operações de Multiplicação Detalhadas}
+\subsection{%s}
 \begin{longtable}{r l l l}
 %s
 \end{longtable}
 """
-                % self._formatar_operacoes_multiplicacao(self.resultado["operacoes_multiplicacao"])
+                % (self._t("Operações de Multiplicação Detalhadas"), self._formatar_operacoes_multiplicacao(self.resultado["operacoes_multiplicacao"]))
             )
 
         if "operacoes_conjugacao" in self.resultado:
@@ -54,35 +82,35 @@ $
 
             blocos.append(
                 r"""
-\section{Operações de Conjugação}
-\subsection{Tabela de Conjugação}
+\section{%s}
+\subsection{%s}
 \begin{adjustbox}{max width=\linewidth, angle=90, center}
 $
 %s
 $
 \end{adjustbox}
 """
-                % self._formatar_tabela_conjugacao(self.resultado["operacoes_conjugacao"])
+                % (self._t("Operações de Conjugação"), self._t("Tabela de Conjugação"), self._formatar_tabela_conjugacao(self.resultado["operacoes_conjugacao"]))
             )
 
             blocos.append(
                 r"""
-\subsection{Operações de Conjugação Detalhadas}
+\subsection{%s}
 %s
 """
-                % self._formatar_operacoes_conjugacao(self.resultado["operacoes_conjugacao"])
+                % (self._t("Operações de Conjugação Detalhadas"), self._formatar_operacoes_conjugacao(self.resultado["operacoes_conjugacao"]))
             )
 
             blocos.append(
                 r"""
-\subsection{Agrupamento em Classes de Conjugação}
+\subsection{%s}
 \[
 \begin{aligned}
 %s
 \end{aligned}
 \]
 """
-                % self._formatar_classes_conjugacao(classes)
+                % (self._t("Agrupamento em Classes de Conjugação"), self._formatar_classes_conjugacao(classes))
             )
 
         sistema = self._latex_escape_text(str(self.metadata.get("sistema", "")))
@@ -92,11 +120,13 @@ $
         data = self._latex_escape_text(str(self.metadata.get("data", "")))
         uuid = self._latex_escape_text(str(self.metadata.get("uuid", "")))
         tempo_exec = self._latex_escape_text(str(self.resultado.get("tempo_execucao", "")))
+        language_packages = r"\usepackage[UTF8,fontset=fandol]{ctex}" if self.idioma == "zh" else ""
 
         return fr"""\documentclass[a4paper,12pt]{{article}}
 \usepackage{{datetime2}}
 \usepackage{{graphicx}}
 \usepackage[utf8]{{inputenc}}
+{language_packages}
 \usepackage{{fancyhdr}}
 \usepackage{{geometry}}
 \usepackage{{amsmath}}
@@ -114,22 +144,23 @@ $
 \setlength{{\headheight}}{{42pt}}
 \setlength{{\headsep}}{{2em}}
 
-\fancyhead[L]{{\textbf{{Análise de Simetria}} \\
-\textbf{{Sistema {sistema}}} \\
-Tempo de Execução: \textbf{{{tempo_exec}}}}}
+\fancyhead[L]{{\textbf{{{self._t("Análise de Simetria")}}} \\
+	extbf{{{self._t("Sistema")} {sistema}}} \\
+{self._t("Tempo de Execução")}: \textbf{{{tempo_exec}}}}}
 
-\fancyhead[C]{{Molécula: \textbf{{{molecula}}} \\
-Grupo: \textbf{{{grupo}}} \\
-Ordem: \textbf{{{ordem}}}}}
+\fancyhead[C]{{{self._t("Molécula")}: \textbf{{{molecula}}} \\
+{self._t("Grupo")}: \textbf{{{grupo}}} \\
+{self._t("Ordem")}: \textbf{{{ordem}}}}}
 
 \fancyhead[R]{{{data} \\
-Relatório: \textbf{{{uuid}}} \\
-Página \thepage\ de \pageref{{LastPage}}}}
+{self._t("Relatório")}: \textbf{{{uuid}}} \\
+{self._t("Página")} \thepage\ {self._t("de")} \pageref{{LastPage}}}}
 
 \fancyfoot[L]{{\scriptsize {{ \textcopyright}} 2026 quantum-materials-simulation-research.github.io/simetria-molecular}}
 
 \begin{{document}}
 
+\renewcommand{{\contentsname}}{{{self._t("Sumário")}}}
 \tableofcontents
 \newpage
 
@@ -212,7 +243,7 @@ Página \thepage\ de \pageref{{LastPage}}}}
 
         for g, conjugacoes in operacoes.items():
             g_tex = self._latex_math_op(g)
-            linhas.append(rf"\subsection*{{Conjugações de ${g_tex}$}}")
+            linhas.append(rf"\subsection*{{{self._t('Conjugações de')} ${g_tex}$}}")
             linhas.append(r"\begin{longtable}{r l l}")
             
             for h, info in conjugacoes.items():

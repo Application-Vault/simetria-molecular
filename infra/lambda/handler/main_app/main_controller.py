@@ -85,7 +85,7 @@ class MoleculeSymmetryApp:
                 .usar(RepresentationType.PERMUTATION)
                 .configurar(analises, uid)
                 .executar()
-                .renderizar(formato)
+                .renderizar(formato, idioma=config.idioma)
             )
 
         # Com operação selecionada: renderiza operação
@@ -237,7 +237,7 @@ def processar_analise_bytes(molecula_bytes: bytes, molecula_filename: str, data:
             temp_id
         )
         .executar()
-        .renderizar(RenderTipo.TEX)
+        .renderizar(RenderTipo.TEX, idioma=data.idioma)
     )
 
     resp = {
@@ -245,6 +245,7 @@ def processar_analise_bytes(molecula_bytes: bytes, molecula_filename: str, data:
         "uuid": temp_id,
         "molecula": getattr(app.molecule, "nome", None),
         "grupo": getattr(app.group, "nome", None),
+        "idioma": data.idioma,
         "tex": tex,                 # sempre vai pro “Resultado”
     }
 
