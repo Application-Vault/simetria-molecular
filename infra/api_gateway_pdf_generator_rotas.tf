@@ -17,3 +17,9 @@ resource "aws_apigatewayv2_route" "pdf_handler_options" {
   target    = "integrations/${aws_apigatewayv2_integration.pdf_handler.id}"
 }
 
+resource "aws_apigatewayv2_route" "pdf_handler_status" {
+  api_id    = aws_apigatewayv2_api.simetria-molecular.id
+  route_key = "GET /api/pdf/{job_id}"
+  target    = "integrations/${aws_apigatewayv2_integration.pdf_handler.id}"
+}
+

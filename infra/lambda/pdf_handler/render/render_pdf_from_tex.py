@@ -1,16 +1,18 @@
 import os
 import subprocess
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 class PdfFromTexGenerator:
     def __init__(self, tex_str: str, tectonic_path: str = None):
         self.tex_str = tex_str
         self.tectonic_path = tectonic_path or "/var/task/bin/tectonic"
 
-    def gerar_pdf(self) -> bytes:
-        workdir = Path("/tmp/pdf_job")
-        workdir.mkdir(parents=True, exist_ok=True)
+    def gerar_pdf(self, timeout=270) -> bytes:
+        with TemporaryDirectory(prefix="pdf_job_", dir="/tmp") as directory:
+            return self._compile(Path(directory), timeout)
 
+    def _compile(self, workdir, timeout):
         tex_path = workdir / "report.tex"
         pdf_path = workdir / "report.pdf"
 
@@ -36,6 +38,7 @@ class PdfFromTexGenerator:
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             env=env,
+            timeout=timeout,
         )
 
         print("[PDF] returncode:", proc.returncode)
