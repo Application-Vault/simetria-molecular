@@ -99,6 +99,10 @@ export function getLocale() {
     return locales[language];
 }
 
+export function getLanguage() {
+    return language;
+}
+
 function localizeText(node) {
     if (node.parentElement?.closest(excluded)) return;
     const raw = node.nodeValue;

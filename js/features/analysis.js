@@ -1,6 +1,7 @@
 import { API_CONFIG } from '../config.js';
 import { $, safeValue, selectedValue, setDisabled, showError, showStatus, ensureTextAreaResultado } from '../utils/dom.js';
 import { clearUi, ensureAbrirPdfButton, openPdfInNewTab, setPdfObjectUrl } from '../services/pdfState.js';
+import { getLanguage } from '../i18n.js';
 
 export function initAnalysis() {
   const analiseBtn = $('botaoAnalise');
@@ -26,6 +27,7 @@ export function initAnalysis() {
     }
 
     const payload = {
+      idioma: getLanguage(),
       render: {
         tipo,
         formato: tipo === 'grafico' ? formatoGrafico : (querPdf ? 'pdf' : 'tex'),
