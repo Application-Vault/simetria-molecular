@@ -35,9 +35,13 @@ class LatexReportGenerator:
         return REPORT_STRINGS.get(source, {}).get(self.idioma, source)
 
     def _latex_group_name(self, s: str) -> str:
-        s = str(s)
-        s = s.replace("∞", r"$\infty$")
-        return s
+        s = str(s).strip()
+        if not s:
+            return ""
+        if s.startswith("$") and s.endswith("$"):
+            s = s[1:-1]
+        s = s.replace("∞", r"\infty{}")
+        return f"${s}$"
 
     def gerar_documento(self):
         blocos = []

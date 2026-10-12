@@ -44,6 +44,17 @@ class ReportLanguageTests(unittest.TestCase):
                 self.assertIn(chr(92) + "textbf{" + label + " Molecular}", report)
                 self.assertNotIn(chr(9) + "extbf", report)
 
+    def test_group_subscripts_are_inside_math_mode(self):
+        generator = LatexReportGenerator(self.metadata, self.result)
+        self.assertEqual(generator._latex_group_name("O_h"), "$O_h$")
+        self.assertEqual(generator._latex_group_name("$O_h$"), "$O_h$")
+        self.assertEqual(generator._latex_group_name("C∞v"), "$C" + chr(92) + "infty{}v$")
+        self.assertEqual(generator._latex_group_name(""), "")
+        for language in ("pt", "en", "zh"):
+            metadata = {**self.metadata, "grupo": "O_h"}
+            report = LatexReportGenerator(metadata, self.result, language).gerar_documento()
+            self.assertIn(chr(92) + "textbf{$O_h$}", report)
+
     def test_all_sections_are_translated(self):
         expected = {
             "en": ["Basic Permutations", "Multiplication Operations", "Detailed Multiplication Operations", "Conjugation Table", "Grouping into Conjugacy Classes", "Conjugations of", "Execution Time", "Contents"],
