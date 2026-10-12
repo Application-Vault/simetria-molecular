@@ -43,11 +43,13 @@ data "aws_iam_openid_connect_provider" "github" {
 }
 
 locals {
-  github_org    = "Application-Vault"
-  github_repo   = "simetria-molecular"
+  github_org     = "Quantum-Materials-Simulation-Research"
+  github_org_id  = "225779897"
+  github_repo    = "simetria-molecular"
+  github_repo_id = "1047982610"
 
-  # Restringe pra branch main (push) - bom pra segurança
-  github_sub = "repo:${local.github_org}/${local.github_repo}:ref:refs/heads/backend"
+  # Restringe ao repositório identificado pelos IDs e à branch backend.
+  github_sub = "repo:${local.github_org}@${local.github_org_id}/${local.github_repo}@${local.github_repo_id}:ref:refs/heads/backend"
 
   github_workflow_ref = "${local.github_org}/${local.github_repo}/.github/workflows/deploy-lambda-functions.yml@refs/heads/backend"
 }
@@ -75,7 +77,7 @@ data "aws_iam_policy_document" "github_assume_role_lambda_writer" {
 
     # exatamente como no print: amarra repo + branch
     condition {
-      test     = "StringLike"
+      test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
       values   = [local.github_sub]
     }
