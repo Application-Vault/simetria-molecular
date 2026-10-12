@@ -20,6 +20,7 @@ export function getPdfObjectUrl() {
 }
 
 export function clearPdfUi() {
+  document.dispatchEvent(new CustomEvent('pdf-reset'));
   const pdfBtn = $('abrirPdf');
   if (pdfBtn) pdfBtn.style.display = 'none';
   revokePdfUrl();
@@ -41,7 +42,7 @@ export function ensureAbrirPdfButton() {
 
   btn = document.createElement('button');
   btn.id = 'abrirPdf';
-  btn.textContent = t('📝 Abrir PDF em outra aba');
+  btn.innerHTML = `<i class="fa-regular fa-file-pdf" aria-hidden="true"></i> ${t('Abrir PDF')}`;
   btn.type = 'button';
   btn.className = 'btn';
   btn.style.display = 'none';

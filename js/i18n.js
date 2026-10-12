@@ -79,6 +79,29 @@ const strings = {
     '📝 Abrir PDF em outra aba': ['📝 Open PDF in a new tab', '📝 在新标签页中打开 PDF'],
 };
 
+Object.assign(strings, {
+    'Abrir PDF': ['Open PDF', '打开 PDF'],
+    'Consultar PDF': ['Check PDF', '查询 PDF'],
+    'PDF pronto.': ['PDF ready.', 'PDF 已生成。'],
+    'PDF na fila...': ['PDF queued...', 'PDF 正在排队…'],
+    'Gerando PDF...': ['Generating PDF...', '正在生成 PDF…'],
+    'Enviando tarefa de PDF...': ['Submitting PDF job...', '正在提交 PDF 任务…'],
+    'Consultando tarefa de PDF...': ['Checking PDF job...', '正在查询 PDF 任务…'],
+    'Reconectando à tarefa de PDF...': ['Reconnecting to PDF job...', '正在重新连接 PDF 任务…'],
+    'Não foi possível consultar o PDF. Tente consultar novamente.': ['Could not check the PDF. Try checking again.', '无法查询 PDF。请重试。'],
+    'O PDF ainda está em processamento. Consulte novamente.': ['The PDF is still processing. Check again.', 'PDF 仍在处理中。请再次查询。'],
+    'Não foi possível enviar a tarefa de PDF. Tente novamente.': ['Could not submit the PDF job. Try again.', '无法提交 PDF 任务。请重试。'],
+    'Resposta inválida ao consultar o PDF.': ['Invalid PDF job response.', 'PDF 任务响应无效。'],
+    'Falha ao gerar PDF. Confira o TeX e tente novamente.': ['Failed to generate PDF. Check the TeX and try again.', '生成 PDF 失败。请检查 TeX 后重试。'],
+    'Tarefa de PDF não encontrada ou expirada.': ['PDF job not found or expired.', 'PDF 任务不存在或已过期。'],
+    'A tarefa de PDF expirou. Gere o PDF novamente.': ['The PDF job expired. Generate the PDF again.', 'PDF 任务已过期。请重新生成 PDF。'],
+    'Geração assíncrona de PDF indisponível.': ['Asynchronous PDF generation is unavailable.', '异步 PDF 生成功能不可用。'],
+    'Não foi possível processar a tarefa de PDF.': ['Could not process the PDF job.', '无法处理 PDF 任务。'],
+    'Não foi possível agendar a geração do PDF.': ['Could not schedule PDF generation.', '无法安排 PDF 生成任务。'],
+    "Campo 'tex' vazio.": ['The TeX field is empty.', 'TeX 内容为空。'],
+    'O relatório TeX excede o limite de 2 MB.': ['The TeX report exceeds the 2 MB limit.', 'TeX 报告超过 2 MB 限制。'],
+});
+
 let language = 'pt';
 const textStates = new WeakMap();
 const attributeStates = new WeakMap();
