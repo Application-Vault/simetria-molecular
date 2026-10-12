@@ -62,6 +62,25 @@ class PdfJobTests(unittest.TestCase):
         self.assertEqual(response["statusCode"], 202)
         return json.loads(response["body"])["job_id"]
 
+    def test_storage_uses_bucket_region_instead_of_lambda_region(self):
+        discovery = Mock()
+        discovery.head_bucket.return_value = {"ResponseMetadata": {"HTTPHeaders": {"x-amz-bucket-region": "us-east-1"}}}
+        regional = Mock()
+        with patch.object(pdf_handler, "s3", None), patch.object(pdf_handler.boto3, "client", side_effect=[discovery, regional]) as client:
+            self.assertIs(pdf_handler.storage(), regional)
+            self.assertIs(pdf_handler.storage(), regional)
+            self.assertEqual(client.call_count, 2)
+            discovery.head_bucket.assert_called_once_with(Bucket="private-jobs")
+            self.assertEqual(client.call_args.kwargs["region_name"], "us-east-1")
+            self.assertEqual(client.call_args.kwargs["config"].signature_version, "s3v4")
+
+    def test_storage_rejects_missing_bucket_region(self):
+        discovery = Mock()
+        discovery.head_bucket.return_value = {"ResponseMetadata": {"HTTPHeaders": {}}}
+        with patch.object(pdf_handler, "s3", None), patch.object(pdf_handler.boto3, "client", return_value=discovery):
+            with self.assertRaisesRegex(RuntimeError, "bucket region"):
+                pdf_handler.storage()
+
     def test_post_enqueues_without_compiling(self):
         with patch.object(pdf_handler, "PdfFromTexGenerator") as generator:
             job_id = self.start()

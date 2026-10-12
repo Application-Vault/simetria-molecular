@@ -7,6 +7,7 @@ import time
 import uuid
 
 import boto3
+from botocore.config import Config
 from botocore.exceptions import ClientError
 
 from render.render_pdf_from_tex import PdfFromTexGenerator
@@ -39,7 +40,12 @@ def response(status, body, extra_headers=None):
 def storage():
     global s3
     if s3 is None:
-        s3 = boto3.client("s3")
+        discovery = boto3.client("s3")
+        metadata = discovery.head_bucket(Bucket=os.environ["PDF_JOB_BUCKET"])
+        region = metadata.get("ResponseMetadata", {}).get("HTTPHeaders", {}).get("x-amz-bucket-region")
+        if not region:
+            raise RuntimeError("Could not determine PDF bucket region")
+        s3 = boto3.client("s3", region_name=region, config=Config(signature_version="s3v4"))
     return s3
 
 
