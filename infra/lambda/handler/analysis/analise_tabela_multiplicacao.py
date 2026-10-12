@@ -30,6 +30,7 @@ class TabelaMultiplicacao:
         """
         self.representacao = representacao
         self.operacoes = representacao.nomes()
+        self.dados = None
         self.dados = self.gerar()
         # print(self.representacao)
         print(">>>>>>>>>>>>>>>>>>TABELA MULTIPLICACAO>>>>>>>>>>>>>>>>>>>>>")
@@ -43,6 +44,8 @@ class TabelaMultiplicacao:
         Raises:
             ValueError: Description
         """
+        if self.dados is not None:
+            return self.dados
         print(">>>>>>>>>>>>>>>>>>TABELA MULTIPLICACAO2>>>>>>>>>>>>>>>>>>>>>")
         # print(self.operacoes)
         """
@@ -82,6 +85,7 @@ class TabelaMultiplicacao:
 
             tabela[a] = linha
             # print(tabela)
-        return tabela
+        self.dados = tabela
+        return self.dados
 
 
