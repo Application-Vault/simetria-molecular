@@ -37,6 +37,13 @@ class ReportLanguageTests(unittest.TestCase):
         self.assertIn(r"\renewcommand{\contentsname}{Sumário}", report)
         self.assertNotIn("fontset=fandol", report)
 
+    def test_system_header_preserves_textbf_command(self):
+        for language, label in (("pt", "Sistema"), ("en", "System"), ("zh", "系统")):
+            with self.subTest(language=language):
+                report = LatexReportGenerator(self.metadata, self.result, language).gerar_documento()
+                self.assertIn(chr(92) + "textbf{" + label + " Molecular}", report)
+                self.assertNotIn(chr(9) + "extbf", report)
+
     def test_all_sections_are_translated(self):
         expected = {
             "en": ["Basic Permutations", "Multiplication Operations", "Detailed Multiplication Operations", "Conjugation Table", "Grouping into Conjugacy Classes", "Conjugations of", "Execution Time", "Contents"],

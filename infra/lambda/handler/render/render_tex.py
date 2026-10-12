@@ -120,6 +120,7 @@ $
         data = self._latex_escape_text(str(self.metadata.get("data", "")))
         uuid = self._latex_escape_text(str(self.metadata.get("uuid", "")))
         tempo_exec = self._latex_escape_text(str(self.resultado.get("tempo_execucao", "")))
+        system_heading = chr(92) + f"textbf{{{self._t('Sistema')} {sistema}}}"
         language_packages = r"\usepackage[UTF8,fontset=fandol]{ctex}" if self.idioma == "zh" else ""
 
         return fr"""\documentclass[a4paper,12pt]{{article}}
@@ -145,7 +146,7 @@ $
 \setlength{{\headsep}}{{2em}}
 
 \fancyhead[L]{{\textbf{{{self._t("Análise de Simetria")}}} \\
-	extbf{{{self._t("Sistema")} {sistema}}} \\
+{system_heading} \\
 {self._t("Tempo de Execução")}: \textbf{{{tempo_exec}}}}}
 
 \fancyhead[C]{{{self._t("Molécula")}: \textbf{{{molecula}}} \\
