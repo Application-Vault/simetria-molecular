@@ -1,5 +1,6 @@
 import { API_CONFIG } from '../config.js';
 import { $, showInfo } from '../utils/dom.js';
+import { t } from '../i18n.js';
 
 export function initResultActions() {
   const btnCopiarTex = $('btnCopiarTex');
@@ -10,18 +11,18 @@ export function initResultActions() {
     btnCopiarTex.addEventListener('click', async () => {
       const tex = resultadoEl?.value || '';
       if (!tex.trim()) {
-        alert('Ainda não há conteúdo TeX para copiar.');
+        alert(t('Ainda não há conteúdo TeX para copiar.'));
         return;
       }
 
       try {
         await navigator.clipboard.writeText(tex);
-        btnCopiarTex.innerHTML = '<i class="fa-solid fa-check"></i> Copiado';
+        btnCopiarTex.innerHTML = `<i class="fa-solid fa-check"></i> ${t('Copiado')}`;
         setTimeout(() => {
-          btnCopiarTex.innerHTML = '<i class="fa-regular fa-copy"></i> Copiar';
+          btnCopiarTex.innerHTML = `<i class="fa-regular fa-copy"></i> ${t('Copiar')}`;
         }, 1400);
       } catch (error) {
-        alert('Não foi possível copiar o conteúdo.');
+        alert(t('Não foi possível copiar o conteúdo.'));
         console.error(error);
       }
     });
@@ -32,7 +33,7 @@ export function initResultActions() {
       const tex = resultadoEl?.value || "";
 
       if (!tex.trim()) {
-        alert("Ainda não há conteúdo TeX para enviar.");
+        alert(t('Ainda não há conteúdo TeX para enviar.'));
         return;
       }
 
@@ -40,7 +41,7 @@ export function initResultActions() {
 
       try {
         btnGerarPdf.disabled = true;
-        btnGerarPdf.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando...';
+        btnGerarPdf.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> ${t('Gerando...')}`;
 
         const response = await fetch(API_CONFIG.baseUrlPdf, {
           method: "POST",
@@ -82,10 +83,10 @@ export function initResultActions() {
       } catch (err) {
         console.error(err);
         if (newTab) newTab.close();
-        alert("Erro ao gerar PDF: " + err.message);
+        alert(t('Erro ao gerar PDF: {message}', { message: t(err.message) }));
       } finally {
         btnGerarPdf.disabled = false;
-        btnGerarPdf.innerHTML = '<i class="fa-regular fa-file-pdf"></i> Gerar PDF';
+        btnGerarPdf.innerHTML = `<i class="fa-regular fa-file-pdf"></i> ${t('Gerar PDF')}`;
       }
     });
   }

@@ -30,6 +30,11 @@
     </div>
 
     <div class="top-actions">
+      <nav class="language-switch" aria-label="Idioma">
+        <button type="button" data-language="pt" title="Português" aria-pressed="true">PT</button>
+        <button type="button" data-language="en" title="Inglês" aria-pressed="false">EN</button>
+        <button type="button" data-language="zh" title="Chinês" aria-pressed="false">ZH</button>
+      </nav>
       <button class="btn ghost" type="button"
         onclick="window.open('https://naavilam.github.io/_posts/2025-06-16-Molecular-Symmetry.html','_blank')">
         🌐 Projeto
@@ -207,6 +212,7 @@
             Analisar Simetria
           </button>
         </div>
+        <p id="status" role="status" aria-live="polite" style="display:none;"></p>
         <div id="pdfSlot"></div>
         <!-- 
         <div class="section">

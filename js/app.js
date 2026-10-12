@@ -4,8 +4,10 @@ import { initResultActions } from './components/resultActions.js';
 import { initMoleculeLoader, carregarListaDeMoleculas } from './features/moleculeLoader.js';
 import { initAnalysis } from './features/analysis.js';
 import { bindViewerControls } from './components/viewer.js';
+import { initLanguage } from './i18n.js';
 
 async function bootstrap() {
+  initLanguage();
   initThemeToggle();
   initRenderMode();
   initResultActions();

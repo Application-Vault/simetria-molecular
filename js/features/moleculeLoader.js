@@ -2,13 +2,19 @@ import { API_CONFIG } from '../config.js';
 import { $, showStatus } from '../utils/dom.js';
 import { clearPdfUi, clearResultadoUi } from '../services/pdfState.js';
 import { atualizarViewerDaMolecula, clearViewer3D } from '../components/viewer.js';
+import { t } from '../i18n.js';
 
 export function initMoleculeLoader() {
   const moleculaSelect = $('moleculaSelect');
   const moleculaOutput = $('moleculaOutput');
   if (!moleculaSelect || !moleculaOutput) return;
+  let loadError = null;
+  document.addEventListener('languagechange', () => {
+    if (loadError) moleculaOutput.value = t(loadError);
+  });
 
   moleculaSelect.addEventListener('change', async () => {
+    loadError = null;
     clearResultadoUi();
     clearPdfUi();
 
@@ -39,13 +45,15 @@ export function initMoleculeLoader() {
       atualizarViewerDaMolecula();
       showStatus('');
     } catch (error) {
-      moleculaOutput.value = String(error?.message ?? error);
+      loadError = String(error?.message ?? error);
+      moleculaOutput.value = t(loadError);
       clearViewer3D();
       showStatus('');
     }
   });
 
   moleculaOutput.addEventListener('input', () => {
+    loadError = null;
     atualizarViewerDaMolecula();
   });
 }
@@ -54,7 +62,7 @@ export async function carregarListaDeMoleculas() {
   const select = $('moleculaSelect');
   if (!select) return;
 
-  select.innerHTML = '<option value="">Carregando moléculas...</option>';
+  select.replaceChildren(new Option(t('Carregando moléculas...'), ''));
 
   try {
     const resp = await fetch(API_CONFIG.baseUrlMoleculasList);
@@ -67,26 +75,27 @@ export async function carregarListaDeMoleculas() {
 
     const defaultOption = document.createElement('option');
     defaultOption.value = '';
-    defaultOption.textContent = 'Selecione uma molécula ...';
+    defaultOption.textContent = t('Selecione uma molécula ...');
     select.appendChild(defaultOption);
 
     moleculas.forEach((mol) => {
       const option = document.createElement('option');
       option.value = mol.id;
+      option.dataset.i18nIgnore = '';
       option.textContent = mol.label;
       select.appendChild(option);
     });
 
     const otherOption = document.createElement('option');
     otherOption.value = 'outro';
-    otherOption.textContent = 'Outra (especifique)';
+    otherOption.textContent = t('Outra (especifique)');
     select.appendChild(otherOption);
 
   } catch (err) {
     console.error(err);
-    select.innerHTML = `
-      <option value="">Erro ao carregar moléculas</option>
-      <option value="outro">Outra (especifique)</option>
-    `;
+    select.replaceChildren(
+      new Option(t('Erro ao carregar moléculas'), ''),
+      new Option(t('Outra (especifique)'), 'outro')
+    );
   }
 }

@@ -1,3 +1,5 @@
+import { t } from '../i18n.js';
+
 export function $(id) {
   return document.getElementById(id);
 }
@@ -18,17 +20,17 @@ export function setDisabled(el, disabled) {
 }
 
 export function showError(msg) {
-  alert('Erro na análise: ' + msg);
+  alert(t('Erro na análise: {message}', { message: t(String(msg)) }));
 }
 
 export function showInfo(msg) {
-  alert(msg);
+  alert(t(msg));
 }
 
 export function showStatus(msg) {
   const el = $('status');
   if (!el) return;
-  el.textContent = msg;
+  el.textContent = t(msg);
   el.style.display = msg ? 'block' : 'none';
 }
 

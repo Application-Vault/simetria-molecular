@@ -1,4 +1,5 @@
 import { atualizarTemaViewer } from './viewer.js';
+import { t } from '../i18n.js';
 
 export function initThemeToggle() {
   const key = 'sm_theme';
@@ -9,6 +10,9 @@ export function initThemeToggle() {
 
   function syncThemeIcon() {
     const isLight = document.body.getAttribute('data-theme') === 'light';
+    const label = t(isLight ? 'Ativar tema escuro' : 'Ativar tema claro');
+    btn.title = label;
+    btn.setAttribute('aria-label', label);
     if (!icon) return;
 
     if (isLight) {
@@ -30,6 +34,7 @@ export function initThemeToggle() {
 
   syncThemeIcon();
   atualizarTemaViewer();
+  document.addEventListener('languagechange', syncThemeIcon);
 
   btn.addEventListener('click', () => {
     const isLight = document.body.getAttribute('data-theme') === 'light';

@@ -1,4 +1,5 @@
 import { $, ensureTextAreaResultado } from '../utils/dom.js';
+import { t } from '../i18n.js';
 
 let pdfObjectUrl = null;
 
@@ -40,7 +41,7 @@ export function ensureAbrirPdfButton() {
 
   btn = document.createElement('button');
   btn.id = 'abrirPdf';
-  btn.textContent = '📝 Abrir PDF em outra aba';
+  btn.textContent = t('📝 Abrir PDF em outra aba');
   btn.type = 'button';
   btn.className = 'btn';
   btn.style.display = 'none';
