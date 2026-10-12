@@ -80,6 +80,7 @@ const strings = {
 };
 
 Object.assign(strings, {
+    'Análise de simetria indisponível para esta molécula. A visualização 3D permanece disponível.': ['Symmetry analysis is unavailable for this molecule. 3D visualization remains available.', '此分子暂不支持对称性分析。3D 可视化仍然可用。'],
     'Abrir PDF': ['Open PDF', '打开 PDF'],
     'Consultar PDF': ['Check PDF', '查询 PDF'],
     'PDF pronto.': ['PDF ready.', 'PDF 已生成。'],

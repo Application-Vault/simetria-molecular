@@ -1,13 +1,33 @@
 import { API_CONFIG } from '../config.js';
 import { $, safeValue, selectedValue, setDisabled, showError, showStatus, ensureTextAreaResultado } from '../utils/dom.js';
 import { clearUi, ensureAbrirPdfButton, openPdfInNewTab, setPdfObjectUrl } from '../services/pdfState.js';
-import { getLanguage } from '../i18n.js';
+import { getLanguage, t } from '../i18n.js';
+
+const visualizationOnlyMolecules = new Set(['c60f36', 'feiii_tetrathiolate', 'tetramethyl-cyclooctatetraeno']);
 
 export function initAnalysis() {
   const analiseBtn = $('botaoAnalise');
   if (!analiseBtn) return;
+  let processing = false;
+  const visualizationOnly = () => visualizationOnlyMolecules.has(safeValue('moleculaSelect', '').toLowerCase());
+
+  function updateAvailability() {
+    const restricted = visualizationOnly();
+    setDisabled(analiseBtn, processing || restricted);
+    const notice = $('analysisAvailability');
+    if (notice) {
+      notice.hidden = !restricted;
+      notice.textContent = restricted ? t('Análise de simetria indisponível para esta molécula. A visualização 3D permanece disponível.') : '';
+    }
+  }
+
+  $('moleculaSelect')?.addEventListener('change', updateAvailability);
+  document.addEventListener('languagechange', updateAvailability);
+  updateAvailability();
 
   analiseBtn.addEventListener('click', async () => {
+    if (processing || visualizationOnly()) return;
+    const selectedMolecule = safeValue('moleculaSelect', '');
     const tipo = selectedValue('input[name="renderTipo"]:checked', 'texto');
     const formatoTexto = selectedValue('input[name="formatoTexto"]:checked', 'tex');
     const formatoGrafico = selectedValue('input[name="formatoGrafico"]:checked', '3d');
@@ -38,7 +58,8 @@ export function initAnalysis() {
 
     formData.append('payload', JSON.stringify(payload));
 
-    setDisabled(analiseBtn, true);
+    processing = true;
+    updateAvailability();
     showStatus('Processando...');
     clearUi();
 
@@ -58,6 +79,11 @@ export function initAnalysis() {
         data = JSON.parse(raw);
       } catch {
         throw new Error('Resposta do backend não é JSON. Atualize o backend para retornar { tex, pdf_base64? }.');
+      }
+
+      if (safeValue('moleculaSelect', '') !== selectedMolecule) {
+        showStatus('');
+        return;
       }
 
       const resultadoEl = ensureTextAreaResultado();
@@ -81,7 +107,8 @@ export function initAnalysis() {
       showStatus('');
       showError(error?.message ?? String(error));
     } finally {
-      setDisabled(analiseBtn, false);
+      processing = false;
+      updateAvailability();
     }
   });
 }
