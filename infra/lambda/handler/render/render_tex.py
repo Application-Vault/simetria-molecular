@@ -126,7 +126,7 @@ Ordem: \textbf{{{ordem}}}}}
 Relatório: \textbf{{{uuid}}} \\
 Página \thepage\ de \pageref{{LastPage}}}}
 
-\fancyfoot[L]{{\scriptsize {{ \textcopyright}} 2026 application-vault.github.io/simetria-molecular}}
+\fancyfoot[L]{{\scriptsize {{ \textcopyright}} 2026 quantum-materials-simulation-research.github.io/simetria-molecular}}
 
 \begin{{document}}
 

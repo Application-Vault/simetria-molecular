@@ -3,11 +3,11 @@ resource "aws_apigatewayv2_api" "simetria-molecular" {
   protocol_type = "HTTP"
 
   cors_configuration {
-    allow_origins = ["https://application-vault.github.io"]
-    allow_methods = ["GET", "POST", "OPTIONS"]
-    allow_headers = ["content-type", "authorization", "x-requested-with"]
+    allow_origins  = ["https://quantum-materials-simulation-research.github.io"]
+    allow_methods  = ["GET", "POST", "OPTIONS"]
+    allow_headers  = ["content-type", "authorization", "x-requested-with"]
     expose_headers = ["content-type"]
-    max_age = 600
+    max_age        = 600
   }
 }
 

@@ -7,7 +7,7 @@ from email.policy import default
 from main_app.main_controller import processar_analise_bytes
 from main_app.main_dto import AnaliseRequest
 
-ALLOWED_ORIGIN = "https://application-vault.github.io"
+ALLOWED_ORIGIN = "https://quantum-materials-simulation-research.github.io"
 MOLECULAS_DIR = Path("static/moleculas")
 
 
